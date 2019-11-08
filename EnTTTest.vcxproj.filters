@@ -24,6 +24,8 @@
     <ClInclude Include="entt\entt.hpp">
       <Filter>EnTT</Filter>
     </ClInclude>
+    <ClInclude Include="MyGame.h" />
+    <ClInclude Include="Components.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -32,6 +34,8 @@
     <ClCompile Include="DeviceResources.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="MyGame.cpp" />
+    <ClCompile Include="Components.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

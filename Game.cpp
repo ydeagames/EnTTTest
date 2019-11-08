@@ -12,9 +12,11 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
 Game::Game() noexcept(false)
+	: m_myGame(&m_context)
 {
     m_deviceResources = std::make_unique<DX::DeviceResources>();
     m_deviceResources->RegisterDeviceNotify(this);
+	m_context.dr = m_deviceResources.get();
 }
 
 // Initialize the Direct3D resources required to run.
@@ -55,6 +57,8 @@ void Game::Update(DX::StepTimer const& timer)
 
     // TODO: Add your game logic here.
     elapsedTime;
+
+	m_myGame.Update();
 }
 #pragma endregion
 
@@ -75,6 +79,8 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
     context;
+
+	m_myGame.Render();
 
     m_deviceResources->PIXEndEvent();
 
@@ -161,17 +167,39 @@ void Game::CreateDeviceDependentResources()
 
     // TODO: Initialize device dependent objects here (independent of window size).
     device;
+
+	m_myGame.RenderInitialize();
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
 void Game::CreateWindowSizeDependentResources()
 {
     // TODO: Initialize windows-size dependent objects here.
+
+	m_context.view = DirectX::SimpleMath::Matrix::CreateLookAt(
+		DirectX::SimpleMath::Vector3(0, 5, 5),
+		DirectX::SimpleMath::Vector3(0, 0, 0),
+		DirectX::SimpleMath::Vector3::Up
+		);
+
+	// ウインドウサイズからアスペクト比を算出する
+	float aspectRatio = 800.f/600.f;
+	// 画角を設定
+	float fovAngleY = XMConvertToRadians(70.0f);
+	// 射影行列を作成する
+	m_context.projection = SimpleMath::Matrix::CreatePerspectiveFieldOfView(
+		fovAngleY,
+		aspectRatio,
+		0.01f,
+		10000.0f
+	);
 }
 
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
+
+	m_myGame.RenderFinalize();
 }
 
 void Game::OnDeviceRestored()

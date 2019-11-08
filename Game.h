@@ -6,6 +6,8 @@
 
 #include "DeviceResources.h"
 #include "StepTimer.h"
+#include "MyGame.h"
+#include "Components.h"
 
 
 // A basic game implementation that creates a D3D11 device and
@@ -52,4 +54,7 @@ private:
 
     // Rendering loop timer.
     DX::StepTimer                           m_timer;
+
+	GameContext                             m_context;
+	MyGame                                  m_myGame;
 };
