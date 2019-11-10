@@ -11,6 +11,9 @@
     <Filter Include="EnTT">
       <UniqueIdentifier>{3405d1f8-f59f-4c90-ad8c-45d1abd661f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Cereal">
+      <UniqueIdentifier>{4f1878cb-7270-4bff-930c-c6cfa19176b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -26,6 +29,21 @@
     </ClInclude>
     <ClInclude Include="MyGame.h" />
     <ClInclude Include="Components.h" />
+    <ClInclude Include="cereal\macros.hpp">
+      <Filter>Cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\specialize.hpp">
+      <Filter>Cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\version.hpp">
+      <Filter>Cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\access.hpp">
+      <Filter>Cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\cereal.hpp">
+      <Filter>Cereal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

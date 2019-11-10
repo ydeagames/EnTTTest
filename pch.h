@@ -57,6 +57,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include <fstream>
+
 #include <algorithm>
 #include <random>
 
@@ -95,6 +97,10 @@
 
 // EnTT
 #include <entt/entt.hpp>
+
+// Cereal
+#include <cereal/cereal.hpp>
+#include <cereal/archives/json.hpp>
 
 namespace DX
 {

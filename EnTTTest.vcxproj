@@ -166,6 +166,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="cereal\access.hpp" />
+    <ClInclude Include="cereal\cereal.hpp" />
+    <ClInclude Include="cereal\macros.hpp" />
+    <ClInclude Include="cereal\specialize.hpp" />
+    <ClInclude Include="cereal\version.hpp" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="DeviceResources.h" />
     <ClInclude Include="entt\entt.hpp" />
