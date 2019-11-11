@@ -9,8 +9,19 @@ MyGame::MyGame(GameContext* context)
 	if (istorage)
 	{
 		cereal::JSONInputArchive input{ istorage };
-		m_scene.restore().entities(input).destroyed(input)
-			.component<Transform, PrimitiveRenderer>(input);
+		auto loader = m_scene.restore();
+		input.setNextName("entities");
+		input.startNode();
+		loader.entities(input);
+		input.finishNode();
+		input.setNextName("destroyed");
+		input.startNode();
+		loader.destroyed(input);
+		input.finishNode();
+		input.setNextName("components");
+		input.startNode();
+		loader.component<Transform, PrimitiveRenderer>(input);
+		input.finishNode();
 	}
 	else
 	{
@@ -42,8 +53,22 @@ MyGame::MyGame(GameContext* context)
 			{
 				// output finishes flushing its contents when it goes out of scope
 				cereal::JSONOutputArchive output{ ostorage };
-				m_scene.snapshot().entities(output).destroyed(output)
-					.component<Transform, PrimitiveRenderer>(output);
+				auto saver = m_scene.snapshot();
+				output.setNextName("entities");
+				output.startNode();
+				output.makeArray();
+				saver.entities(output);
+				output.finishNode();
+				output.setNextName("destroyed");
+				output.startNode();
+				output.makeArray();
+				saver.destroyed(output);
+				output.finishNode();
+				output.setNextName("components");
+				output.startNode();
+				output.makeArray();
+				saver.component<Transform, PrimitiveRenderer>(output);
+				output.finishNode();
 			}
 		}
 	}
