@@ -50,23 +50,33 @@ public:
 	}
 };
 
+class Updaters
+{
+public:
+	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)
+	{
+		for (auto& func : updates)
+			func(ctx, registry, entity);
+	}
+
+public:
+	using UpdateFunc = std::function<void(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)>;
+	static std::vector<UpdateFunc> updates;
+};
+
 template<typename T>
 class Updater
 {
 public:
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)
 	{
-		static_cast<T&>(this)->Update(ctx, registry, entity);
+		static_cast<T*>(this)->Update(ctx, registry, entity);
 	}
-
-public:
-	using UpdateFunc = decltype(&Update);
-	static std::vector<UpdateFunc> updates;
 
 public:
 	Updater()
 	{
-		updates.push_back(std::bind(Update, this));
+		Updaters::updates.push_back(std::bind(&Updater::Update, this));
 	}
 };
 

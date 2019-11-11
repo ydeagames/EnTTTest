@@ -76,8 +76,8 @@ MyGame::MyGame(GameContext* context)
 
 void MyGame::Update()
 {
-	m_scene.view<std::unique_ptr<Updater>>().each([&](auto& entity, std::unique_ptr<Updater>& renderer) {
-		renderer->Update(*m_context, m_scene, entity);
+	m_scene.view<Updaters>().each([&](auto& entity, Updaters& updaters) {
+		updaters.Update(*m_context, m_scene, entity);
 		});
 }
 
