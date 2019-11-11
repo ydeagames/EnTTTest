@@ -50,22 +50,33 @@ public:
 	}
 };
 
+template<typename T>
 class Updater
 {
 public:
-	virtual ~Updater() {}
+	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)
+	{
+		static_cast<T&>(this)->Update(ctx, registry, entity);
+	}
 
 public:
-	virtual void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) = 0;
+	using UpdateFunc = decltype(&Update);
+	static std::vector<UpdateFunc> updates;
+
+public:
+	Updater()
+	{
+		updates.push_back(std::bind(Update, this));
+	}
 };
 
-class MoveUpdater : public Updater
+class MoveUpdater : public Updater<MoveUpdater>
 {
 public:
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
 };
 
-class MoveDownUpdater : public Updater
+class MoveDownUpdater : public Updater<MoveDownUpdater>
 {
 public:
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);

@@ -6,7 +6,7 @@ MyGame::MyGame(GameContext* context)
 	: m_context(context)
 {
 	std::ifstream istorage("scene.json");
-	if (istorage)
+	if (!istorage)
 	{
 		cereal::JSONInputArchive input{ istorage };
 		auto loader = m_scene.restore();
@@ -43,8 +43,8 @@ MyGame::MyGame(GameContext* context)
 			transform.position.x = -1;
 			m_scene.assign<Transform>(obj1, std::move(transform));
 			m_scene.assign<PrimitiveRenderer>(obj1, PrimitiveRenderer());
-			//m_scene.assign<std::unique_ptr<Updater>>(obj1, std::make_unique<MoveUpdater>());
-			//m_scene.assign<std::unique_ptr<Updater>>(obj1, std::make_unique<MoveDownUpdater>());
+			m_scene.assign<MoveUpdater>(obj1, MoveUpdater());
+			m_scene.assign<MoveDownUpdater>(obj1, MoveDownUpdater());
 		}
 
 		{
