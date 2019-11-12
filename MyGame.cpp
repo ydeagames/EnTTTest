@@ -20,7 +20,11 @@ MyGame::MyGame(GameContext* context)
 		input.finishNode();
 		input.setNextName("components");
 		input.startNode();
-		loader.component<Transform, PrimitiveRenderer>(input);
+		loader.component<
+			Transform,
+			PrimitiveRenderer,
+			UpdateRenderer
+		>(input);
 		input.finishNode();
 	}
 	else
@@ -28,7 +32,8 @@ MyGame::MyGame(GameContext* context)
 		{
 			auto obj1 = m_scene.create();
 			m_scene.assign<Transform>(obj1, Transform());
-			m_scene.assign<PrimitiveRenderer>(obj1, PrimitiveRenderer());
+			//m_scene.assign<PrimitiveRenderer>(obj1, PrimitiveRenderer());
+			m_scene.assign<UpdateRenderer>(obj1, UpdateRenderer());
 		}
 		{
 			auto obj1 = m_scene.create();
@@ -67,7 +72,11 @@ MyGame::MyGame(GameContext* context)
 				output.setNextName("components");
 				output.startNode();
 				output.makeArray();
-				saver.component<Transform, PrimitiveRenderer>(output);
+				saver.component<
+					Transform,
+					PrimitiveRenderer,
+					UpdateRenderer
+				>(output);
 				output.finishNode();
 			}
 		}
@@ -76,28 +85,22 @@ MyGame::MyGame(GameContext* context)
 
 void MyGame::Update()
 {
-	Updaters::Update(*m_context, m_scene);
+	Updatable::Update(*m_context, m_scene);
 }
 
 void MyGame::RenderInitialize()
 {
-	m_scene.view<PrimitiveRenderer>().each([&](auto& entity, PrimitiveRenderer& renderer) {
-		renderer.RenderInitialize(*m_context, m_scene, entity);
-		});
+	Renderable::RenderInitialize(*m_context, m_scene);
 }
 
 void MyGame::Render()
 {
-	m_scene.view<PrimitiveRenderer>().each([&](auto& entity, PrimitiveRenderer& renderer) {
-		renderer.Render(*m_context, m_scene, entity);
-		});
+	Renderable::Render(*m_context, m_scene);
 }
 
 void MyGame::RenderFinalize()
 {
-	m_scene.view<PrimitiveRenderer>().each([&](auto& entity, PrimitiveRenderer& renderer) {
-		renderer.RenderFinalize(*m_context, m_scene, entity);
-		});
+	Renderable::RenderFinalize(*m_context, m_scene);
 }
 
 MyGame::~MyGame()

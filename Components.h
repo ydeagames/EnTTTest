@@ -50,75 +50,106 @@ public:
 	}
 };
 
-class Updaters
+template<typename B, uint64_t... meta>
+class EventBus
 {
-public:
-	static void Update(GameContext& ctx, entt::DefaultRegistry& registry)
+private:
+	using Func = void(GameContext& ctx, entt::DefaultRegistry& registry);
+	static std::vector<std::function<Func>>& handlers()
 	{
-		for (auto& func : updates)
-			func(ctx, registry);
+		static std::vector<std::function<Func>> value;
+		return value;
 	}
 
-private:
-	static std::vector<std::function<void(GameContext& ctx, entt::DefaultRegistry& registry)>> updates;
-
-	template<typename T>
-	static int RegisterOnce()
+	template<typename T, typename F>
+	static int RegisterOnce(F f)
 	{
-		updates.push_back([](GameContext& ctx, entt::DefaultRegistry& registry) {
-			registry.view<T>().each([&](auto& entity, auto& comp) {
-				comp.Update(ctx, registry, entity);
+		handlers().push_back([f](GameContext& ctx, entt::DefaultRegistry& registry) {
+			registry.view<T>().each([f, &ctx, &registry](auto& entity, T& comp) {
+				std::mem_fn(f)(comp, ctx, registry, entity);
 				});
 			});
 		return 0;
 	}
+
+public:
+	static void Post(GameContext& ctx, entt::DefaultRegistry& registry)
+	{
+		for (auto& func : handlers())
+			func(ctx, registry);
+	}
+
+public:
+	template<typename T, typename F>
+	static void Register(F f)
+	{
+		static int once = RegisterOnce<T>(f);
+	}
+};
+
+class Updatable
+{
 public:
 	template<typename T>
 	static void Register()
 	{
-		static int once = RegisterOnce<T>();
+		EventBus<Updatable>::Register<T>(&T::Update);
 	}
-};
 
-template<typename T>
-class Updatable
-{
-public:
-	Updatable()
+	static void Update(GameContext& ctx, entt::DefaultRegistry& registry)
 	{
-		Updaters::Register<T>();
+		EventBus<Updatable>::Post(ctx, registry);
 	}
 };
 
-class MoveUpdater : public Updatable<MoveUpdater>
+class Renderable
 {
 public:
+	template<typename T>
+	static void Register()
+	{
+		EventBus<Renderable, 0>::Register<T>(&T::RenderInitialize);
+		EventBus<Renderable>::Register<T>(&T::Render);
+		EventBus<Renderable, 1>::Register<T>(&T::RenderFinalize);
+	}
+
+	static void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry)
+	{
+		EventBus<Renderable, 0>::Post(ctx, registry);
+	}
+
+	static void Render(GameContext& ctx, entt::DefaultRegistry& registry)
+	{
+		EventBus<Renderable>::Post(ctx, registry);
+	}
+
+	static void RenderFinalize(GameContext& ctx, entt::DefaultRegistry& registry)
+	{
+		EventBus<Renderable, 1>::Post(ctx, registry);
+	}
+};
+
+class MoveUpdater
+{
+public:
+	MoveUpdater() { Updatable::Register<MoveUpdater>(); }
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
 };
 
-class MoveDownUpdater : public Updatable<MoveDownUpdater>
+class MoveDownUpdater
 {
 public:
+	MoveDownUpdater() { Updatable::Register<MoveDownUpdater>(); }
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
 };
 
-class Renderer
-{
-public:
-	virtual ~Renderer() {}
-
-public:
-	virtual void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) = 0;
-	virtual void Render(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) = 0;
-	virtual void RenderFinalize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) = 0;
-};
-
-class PrimitiveRenderer : public Renderer
+class PrimitiveRenderer
 {
 public:
 	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
 
 public:
+	PrimitiveRenderer() { Renderable::Register<PrimitiveRenderer>(); }
 	void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
 	void Render(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
 	void RenderFinalize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
@@ -128,5 +159,15 @@ public:
 	void serialize(Archive& archive)
 	{
 		//archive;
+	}
+};
+
+class UpdateRenderer : public MoveUpdater, public PrimitiveRenderer
+{
+public:
+	UpdateRenderer()
+	{
+		Updatable::Register<UpdateRenderer>();
+		Renderable::Register<UpdateRenderer>();
 	}
 };
