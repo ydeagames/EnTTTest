@@ -53,40 +53,50 @@ public:
 class Updaters
 {
 public:
-	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)
+	static void Update(GameContext& ctx, entt::DefaultRegistry& registry)
 	{
 		for (auto& func : updates)
-			func(ctx, registry, entity);
+			func(ctx, registry);
 	}
 
+private:
+	static std::vector<std::function<void(GameContext& ctx, entt::DefaultRegistry& registry)>> updates;
+
+	template<typename T>
+	static int RegisterOnce()
+	{
+		updates.push_back([](GameContext& ctx, entt::DefaultRegistry& registry) {
+			registry.view<T>().each([&](auto& entity, auto& comp) {
+				comp.Update(ctx, registry, entity);
+				});
+			});
+		return 0;
+	}
 public:
-	using UpdateFunc = std::function<void(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)>;
-	static std::vector<UpdateFunc> updates;
+	template<typename T>
+	static void Register()
+	{
+		static int once = RegisterOnce<T>();
+	}
 };
 
 template<typename T>
-class Updater
+class Updatable
 {
 public:
-	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)
+	Updatable()
 	{
-		static_cast<T*>(this)->Update(ctx, registry, entity);
-	}
-
-public:
-	Updater()
-	{
-		Updaters::updates.push_back(std::bind(&Updater::Update, this));
+		Updaters::Register<T>();
 	}
 };
 
-class MoveUpdater : public Updater<MoveUpdater>
+class MoveUpdater : public Updatable<MoveUpdater>
 {
 public:
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
 };
 
-class MoveDownUpdater : public Updater<MoveDownUpdater>
+class MoveDownUpdater : public Updatable<MoveDownUpdater>
 {
 public:
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
@@ -107,7 +117,6 @@ class PrimitiveRenderer : public Renderer
 {
 public:
 	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
-	int i;
 
 public:
 	void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);

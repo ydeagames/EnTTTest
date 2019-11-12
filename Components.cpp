@@ -4,6 +4,8 @@
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
+std::vector<std::function<void(GameContext& ctx, entt::DefaultRegistry& registry)>> Updaters::updates;
+
 void PrimitiveRenderer::RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)
 {
 	m_model = GeometricPrimitive::CreateSphere(ctx.dr->GetD3DDeviceContext());

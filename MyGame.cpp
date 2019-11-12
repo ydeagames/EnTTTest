@@ -76,9 +76,7 @@ MyGame::MyGame(GameContext* context)
 
 void MyGame::Update()
 {
-	m_scene.view<Updaters>().each([&](auto& entity, Updaters& updaters) {
-		updaters.Update(*m_context, m_scene, entity);
-		});
+	Updaters::Update(*m_context, m_scene);
 }
 
 void MyGame::RenderInitialize()
