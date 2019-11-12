@@ -61,12 +61,12 @@ private:
 		return value;
 	}
 
-	template<typename T, typename F>
-	static int RegisterOnce(F f)
+	template<typename T, void (T::*F)()>
+	static int RegisterOnce()
 	{
-		handlers().push_back([f](GameContext& ctx, entt::DefaultRegistry& registry) {
-			registry.view<T>().each([f, &ctx, &registry](auto& entity, T& comp) {
-				std::mem_fn(f)(comp, ctx, registry, entity);
+		handlers().push_back([](GameContext& ctx, entt::DefaultRegistry& registry) {
+			registry.view<T>().each([&](auto& entity, T& comp) {
+				(comp.*F)(ctx, registry, entity);
 				});
 			});
 		return 0;
@@ -80,10 +80,10 @@ public:
 	}
 
 public:
-	template<typename T, typename F>
-	static void Register(F f)
+	template<typename T, void (T::*F)()>
+	static void Register()
 	{
-		static int once = RegisterOnce<T>(f);
+		static int once = RegisterOnce<T, F>();
 	}
 };
 
@@ -93,7 +93,7 @@ public:
 	template<typename T>
 	static void Register()
 	{
-		EventBus<Updatable>::Register<T>(&T::Update);
+		EventBus<Updatable>::Register<T, &T::Update>();
 	}
 
 	static void Update(GameContext& ctx, entt::DefaultRegistry& registry)
@@ -108,9 +108,9 @@ public:
 	template<typename T>
 	static void Register()
 	{
-		EventBus<Renderable, 0>::Register<T>(&T::RenderInitialize);
-		EventBus<Renderable>::Register<T>(&T::Render);
-		EventBus<Renderable, 1>::Register<T>(&T::RenderFinalize);
+		EventBus<Renderable, 0>::Register<T, &T::RenderInitialize>();
+		EventBus<Renderable>::Register<T, &T::Render>();
+		EventBus<Renderable, 1>::Register<T, &T::RenderFinalize>();
 	}
 
 	static void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry)
