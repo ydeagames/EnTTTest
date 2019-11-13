@@ -17,9 +17,13 @@ public:
 public:
 	void operator()(Entity& entity)
 	{
-		std::string value;
-		archive(value);
-		entity = std::stoi(value);
+		archive(entity);
+	}
+
+	template<typename T>
+	void operator()(Entity& entity, T& component)
+	{
+		archive(entity, component);
 	}
 };
 
