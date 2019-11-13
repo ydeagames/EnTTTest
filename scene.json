@@ -1,73 +1,105 @@
 {
-    "entities": [
-        "2",
-        "1",
-        "0"
-    ],
-    "destroyed": [],
-    "components": [
-        {
-            "0": {
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0,
-                    "w": 1.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+    "entities": {
+        "created": [
+            2,
+            1,
+            0
+        ],
+        "destroyed": []
+    },
+    "components": {
+        "Transform": [
+            {
+                "id": 0,
+                "component": {
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
                 }
             },
-            "1": {
-                "position": {
-                    "x": 1.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0,
-                    "w": 1.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+            {
+                "id": 1,
+                "component": {
+                    "position": {
+                        "x": 1.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
                 }
             },
-            "2": {
-                "position": {
-                    "x": -1.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0,
-                    "w": 1.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+            {
+                "id": 2,
+                "component": {
+                    "position": {
+                        "x": -1.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
                 }
             }
-        },
-        {
-            "1": {},
-            "2": {}
-        },
-        {
-            "0": {}
-        }
-    ]
+        ],
+        "MoveUpdater": [
+            {
+                "id": 2,
+                "component": {}
+            }
+        ],
+        "MoveDownUpdater": [
+            {
+                "id": 2,
+                "component": {}
+            }
+        ],
+        "PrimitiveRenderer": [
+            {
+                "id": 1,
+                "component": {}
+            },
+            {
+                "id": 2,
+                "component": {}
+            }
+        ],
+        "UpdateRenderer0": [
+            {
+                "id": 0,
+                "component": {}
+            }
+        ]
+    }
 }

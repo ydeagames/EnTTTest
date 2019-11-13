@@ -22,7 +22,7 @@ void PrimitiveRenderer::RenderFinalize(GameContext& ctx, entt::DefaultRegistry& 
 
 void MoveUpdater::Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)
 {
-	registry.get<Transform>(entity).position.x += .1f;EventBus::
+	registry.get<Transform>(entity).position.x += .1f;
 }
 
 void MoveDownUpdater::Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)

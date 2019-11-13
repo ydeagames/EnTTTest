@@ -31,6 +31,9 @@ public:
 class Transform
 {
 public:
+	static constexpr const char* ComponentName = "Transform";
+
+public:
 	DirectX::SimpleMath::Vector3 position;
 	DirectX::SimpleMath::Quaternion rotation;
 	DirectX::SimpleMath::Vector3 scale = { 1, 1, 1 };
@@ -54,19 +57,40 @@ public:
 class MoveUpdater
 {
 public:
+	static constexpr const char* ComponentName = "MoveUpdater";
+
+public:
 	MoveUpdater() { Updatable::Register<MoveUpdater>(); }
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
+
+public:
+	template<class Archive>
+	void serialize(Archive& archive)
+	{
+	}
 };
 
 class MoveDownUpdater
 {
 public:
+	static constexpr const char* ComponentName = "MoveDownUpdater";
+
+public:
 	MoveDownUpdater() { Updatable::Register<MoveDownUpdater>(); }
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
+
+public:
+	template<class Archive>
+	void serialize(Archive& archive)
+	{
+	}
 };
 
 class PrimitiveRenderer
 {
+public:
+	static constexpr const char* ComponentName = "PrimitiveRenderer";
+
 public:
 	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
 
@@ -80,16 +104,24 @@ public:
 	template<class Archive>
 	void serialize(Archive& archive)
 	{
-		//archive;
 	}
 };
 
 class UpdateRenderer : public MoveUpdater, public PrimitiveRenderer
 {
 public:
+	static constexpr const char* ComponentName = "UpdateRenderer";
+
+public:
 	UpdateRenderer()
 	{
 		Updatable::Register<UpdateRenderer>();
 		Renderable::Register<UpdateRenderer>();
+	}
+
+public:
+	template<class Archive>
+	void serialize(Archive& archive)
+	{
 	}
 };
