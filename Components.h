@@ -61,12 +61,12 @@ private:
 		return value;
 	}
 
-	template<typename T, void (T::*F)(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)>
+	template<typename T, typename F, F f>
 	static int RegisterOnce()
 	{
 		handlers().push_back([](GameContext& ctx, entt::DefaultRegistry& registry) {
 			registry.view<T>().each([&](auto& entity, T& comp) {
-				(comp.*F)(ctx, registry, entity);
+				(comp.*f)(ctx, registry, entity);
 				});
 			});
 		return 0;
@@ -80,10 +80,10 @@ public:
 	}
 
 public:
-	template<typename T, void (T::*F)(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)>
+	template<typename T, typename F, F f>
 	static void Register()
 	{
-		static int once = RegisterOnce<T, F>();
+		static int once = RegisterOnce<T, F, f>();
 	}
 };
 
@@ -93,7 +93,7 @@ public:
 	template<typename T>
 	static void Register()
 	{
-		EventBus<Updatable>::Register<T, &T::Update>();
+		EventBus<Updatable>::Register<T, decltype(&T::Update), &T::Update>();
 	}
 
 	static void Update(GameContext& ctx, entt::DefaultRegistry& registry)
@@ -108,9 +108,9 @@ public:
 	template<typename T>
 	static void Register()
 	{
-		EventBus<Renderable, 0>::Register<T, &T::RenderInitialize>();
-		EventBus<Renderable>::Register<T, &T::Render>();
-		EventBus<Renderable, 1>::Register<T, &T::RenderFinalize>();
+		EventBus<Renderable, 0>::Register<T, decltype(&T::RenderInitialize), &T::RenderInitialize>();
+		EventBus<Renderable>::Register<T, decltype(&T::Render), &T::Render>();
+		EventBus<Renderable, 1>::Register<T, decltype(&T::RenderFinalize), &T::RenderFinalize>();
 	}
 
 	static void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry)
@@ -170,9 +170,4 @@ public:
 		Updatable::Register<UpdateRenderer>();
 		Renderable::Register<UpdateRenderer>();
 	}
-
-	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) {}
-	void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) {}
-	void Render(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) {}
-	void RenderFinalize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) {}
 };
