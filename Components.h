@@ -66,7 +66,7 @@ private:
 	{
 		handlers().push_back([f](GameContext& ctx, entt::DefaultRegistry& registry) {
 			registry.view<T>().each([f, &ctx, &registry](auto& entity, T& comp) {
-				std::mem_fn(f)(comp, ctx, registry, entity);
+				(comp.*f)(ctx, registry, entity);
 				});
 			});
 		return 0;
