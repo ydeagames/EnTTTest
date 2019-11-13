@@ -61,7 +61,7 @@ private:
 		return value;
 	}
 
-	template<typename T, void (T::*F)()>
+	template<typename T, void (T::*F)(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)>
 	static int RegisterOnce()
 	{
 		handlers().push_back([](GameContext& ctx, entt::DefaultRegistry& registry) {
@@ -80,7 +80,7 @@ public:
 	}
 
 public:
-	template<typename T, void (T::*F)()>
+	template<typename T, void (T::*F)(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity)>
 	static void Register()
 	{
 		static int once = RegisterOnce<T, F>();
@@ -170,4 +170,9 @@ public:
 		Updatable::Register<UpdateRenderer>();
 		Renderable::Register<UpdateRenderer>();
 	}
+
+	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) {}
+	void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) {}
+	void Render(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) {}
+	void RenderFinalize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) {}
 };
