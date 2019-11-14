@@ -13,7 +13,10 @@ private:
 	static const char* name0(...)
 	{
 		const char* name = typeid(T).name();
-		return std::strchr(name, ' ') + 1;
+		auto ptr = std::strchr(name, ' ');
+		if (ptr == nullptr)
+			return name;
+		return ptr + 1;
 	}
 
 public:
@@ -157,6 +160,65 @@ public:
 };
 
 template <typename Entity>
+class ObjectTagSnapshot
+{
+private:
+	cereal::JSONOutputArchive& archive;
+	Entity stack = 0;
+
+public:
+	ObjectTagSnapshot(cereal::JSONOutputArchive& archive)
+		: archive(archive)
+	{
+	}
+
+public:
+	void operator()(Entity entity)
+	{
+		if (stack == 0)
+		{
+			stack = entity;
+		}
+		else
+		{
+			assert(false);
+		}
+	}
+
+	template<typename T>
+	void operator()(Entity entity, const T& tag)
+	{
+		if (stack == 0)
+		{
+			assert(false);
+		}
+		else
+		{
+			stack--;
+			archive.startNode();
+			archive(cereal::make_nvp("id", entity));
+			archive(cereal::make_nvp("tag", tag));
+			archive.finishNode();
+		}
+	}
+
+private:
+	template<typename Tag>
+	void tag0(entt::Snapshot<Entity>& saver) {
+		archive.setNextName(ComponentNameResolver::name<Tag>());
+		saver.tag<Tag>(*this);
+	}
+
+public:
+	template<typename... Tag>
+	void tag(entt::Snapshot<Entity>& saver) {
+		using accumulator_type = int[];
+		accumulator_type accumulator = { 0, (tag0<Tag>(saver), 0)... };
+		(void)accumulator;
+	}
+};
+
+template <typename Entity>
 class ObjectComponentSnapshot
 {
 private:
@@ -278,12 +340,12 @@ public:
 						}
 						archive.finishNode();
 					}
-					//{
-					//	archive.setNextName("tags");
-					//	archive.startNode();
-					//	snap.tag<entt::tag<"enemy"_hs>>(carchive);
-					//	archive.finishNode();
-					//}
+					{
+						archive.setNextName("tags");
+						archive.startNode();
+						snap.tag<Tags...>(carchive);
+						archive.finishNode();
+					}
 					{
 						archive.setNextName("components");
 						archive.startNode();
@@ -313,6 +375,7 @@ public:
 				cereal::JSONOutputArchive archive{ storage };
 				ObjectSnapshot<entt::entity> oarchive(archive);
 				ObjectComponentSnapshot<entt::entity> carchive(archive);
+				ObjectTagSnapshot<entt::entity> tarchive(archive);
 				auto snap = scene.snapshot();
 				{
 					{
@@ -334,12 +397,12 @@ public:
 						}
 						archive.finishNode();
 					}
-					//{
-					//	archive.setNextName("tags");
-					//	archive.startNode();
-					//	snap.tag<entt::tag<"enemy"_hs>>(carchive);
-					//	archive.finishNode();
-					//}
+					{
+						archive.setNextName("tags");
+						archive.startNode();
+						tarchive.tag<Tags...>(snap);
+						archive.finishNode();
+					}
 					{
 						archive.setNextName("components");
 						archive.startNode();
