@@ -116,8 +116,12 @@ public:
 private:
 	template<typename Component>
 	void component0(entt::SnapshotLoader<Entity>& loader) {
-		archive.setNextName(ComponentNameResolver::name<Component>());
-		loader.component<Component>(*this);
+		const char* name = ComponentNameResolver::name<Component>();
+		if (archive.hasName(name))
+		{
+			archive.setNextName(name);
+			loader.component<Component>(*this);
+		}
 	}
 
 public:

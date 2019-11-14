@@ -543,6 +543,24 @@ namespace cereal
             throw Exception("JSON Parsing failed - provided NVP (" + std::string(searchName) + ") not found");
           }
 
+          //! Check if node with given name exists
+          inline bool has( const char * searchName ) const
+          {
+            const auto len = std::strlen( searchName );
+            size_t index = 0;
+            for( auto it = itsMemberItBegin; it != itsMemberItEnd; ++it, ++index )
+            {
+              const auto currentName = it->name.GetString();
+              if( ( std::strncmp( searchName, currentName, len ) == 0 ) &&
+                  ( std::strlen( currentName ) == len ) )
+              {
+                return true;
+              }
+            }
+
+            return false;
+          }
+
         private:
           MemberIterator itsMemberItBegin, itsMemberItEnd; //!< The member iterator (object)
           ValueIterator itsValueItBegin;                   //!< The value iterator (array)
@@ -614,6 +632,12 @@ namespace cereal
       void setNextName( const char * name )
       {
         itsNextName = name;
+      }
+
+      //! Check if node with given name exists
+      bool hasName( const char* name )
+      {
+        return itsIteratorStack.back().has(name);
       }
 
       //! Loads a value from the current node - small signed overload
