@@ -45,6 +45,7 @@
       <Filter>Cereal</Filter>
     </ClInclude>
     <ClInclude Include="Events.h" />
+    <ClInclude Include="Serialize.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

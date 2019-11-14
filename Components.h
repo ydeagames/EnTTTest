@@ -18,6 +18,15 @@ namespace DirectX
 	}
 }
 
+//namespace entt
+//{
+//	template<typename Archive>
+//	void serialize(Archive& archive, tag<"enemy"_hs>& tag) {
+//		static std::string name = "enemy";
+//		archive(name);
+//	}
+//}
+
 class GameContext
 {
 public:

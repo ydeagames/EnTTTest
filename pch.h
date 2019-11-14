@@ -97,6 +97,13 @@
 
 // EnTT
 #include <entt/entt.hpp>
+namespace entt
+{
+	using registry = entt::DefaultRegistry;
+	using entity = registry::entity_type;
+	template<entity Value>
+	using tag = std::integral_constant<entity, Value>;
+}
 
 // Cereal
 #include <cereal/cereal.hpp>
