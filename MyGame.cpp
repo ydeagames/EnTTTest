@@ -5,17 +5,14 @@
 class ComponentNameResolver
 {
 private:
-	struct general_ {};
-	struct special_ : general_ {};
-
-	template<typename T, typename = std::enable_if<!std::is_member_pointer<decltype(&T::ComponentName)>::value>::type>
-	static const char* name0(special_)
+	template<typename T, typename = decltype(&T::ComponentName)>
+	static const char* name0()
 	{
 		return T::ComponentName;
 	}
 
 	template<typename T>
-	static const char* name0(general_)
+	static const char* name0(...)
 	{
 		const char* name = typeid(T).name();
 		return std::strchr(name, ' ') + 1;
@@ -25,7 +22,7 @@ public:
 	template<typename T>
 	static const char* name()
 	{
-		return name0<T>(special_());
+		return name0<T>();
 	}
 };
 
@@ -233,6 +230,13 @@ public:
 MyGame::MyGame(GameContext* context)
 	: m_context(context)
 {
+	Updatable::Register<Transform>();
+	Updatable::Register<MoveUpdater>();
+	Updatable::Register<MoveDownUpdater>();
+	Renderable::Register<PrimitiveRenderer>();
+	Updatable::Register<UpdateRenderer>();
+	Renderable::Register<UpdateRenderer>();
+
 	std::ifstream istorage("scene.json");
 	if (istorage)
 	{

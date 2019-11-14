@@ -60,7 +60,6 @@ public:
 	static constexpr const char* ComponentName = "MoveUpdater";
 
 public:
-	MoveUpdater() { Updatable::Register<MoveUpdater>(); }
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
 
 public:
@@ -76,7 +75,6 @@ public:
 	static constexpr const char* ComponentName = "MoveDownUpdater";
 
 public:
-	MoveDownUpdater() { Updatable::Register<MoveDownUpdater>(); }
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
 
 public:
@@ -95,7 +93,6 @@ public:
 	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
 
 public:
-	PrimitiveRenderer() { Renderable::Register<PrimitiveRenderer>(); }
 	void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
 	void Render(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
 	void RenderFinalize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
@@ -111,13 +108,6 @@ class UpdateRenderer : public MoveUpdater, public PrimitiveRenderer
 {
 public:
 	static constexpr const char* ComponentName = "UpdateRenderer";
-
-public:
-	UpdateRenderer()
-	{
-		Updatable::Register<UpdateRenderer>();
-		Renderable::Register<UpdateRenderer>();
-	}
 
 public:
 	template<class Archive>

@@ -42,7 +42,8 @@ public:
 class Updatable
 {
 public:
-	template<typename T>
+	template<typename T> static void Register(...) {}
+	template<typename T, typename = decltype(&T::Update)>
 	static void Register()
 	{
 		EventBus<Updatable>::Register<T>(&T::Update);
@@ -57,7 +58,8 @@ public:
 class Renderable
 {
 public:
-	template<typename T>
+	template<typename T> static void Register(...) {}
+	template<typename T, typename = decltype(&T::RenderInitialize), typename = decltype(&T::Render), typename = decltype(&T::RenderFinalize)>
 	static void Register()
 	{
 		EventBus<Renderable, 0>::Register<T>(&T::RenderInitialize);
