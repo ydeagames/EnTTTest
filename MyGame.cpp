@@ -7,16 +7,21 @@ MyGame::MyGame(GameContext* context)
 	: m_context(context)
 {
 	using Components = ComponentManager<
-		Transform,
-		MoveUpdater,
-		MoveDownUpdater,
-		PrimitiveRenderer,
-		UpdateRenderer
+		std::tuple<
+			Transform,
+			MoveUpdater,
+			MoveDownUpdater,
+			PrimitiveRenderer,
+			UpdateRenderer
+		>,
+		std::tuple<
+			Updatable,
+			Renderable
+		>,
+		std::tuple<
+		>
 	>;
-	Components::InitializeEvents<
-		Updatable,
-		Renderable
-	>();
+	Components::InitializeEvents();
 
 	//if (Components::LoadScene("scene.json", m_scene))
 	//{

@@ -2,7 +2,7 @@
 
 class GameContext;
 
-template<typename B, uint64_t... meta>
+template<typename Events, uint64_t... meta>
 class EventBus
 {
 private:

@@ -225,8 +225,12 @@ public:
 	}
 };
 
-template<typename... Components>
-class ComponentManager
+// Declaration of a template
+template<typename Components, typename Events, typename Tags>
+class ComponentManager;
+
+template<typename... Components, typename... Events, typename... Tags>
+class ComponentManager<std::tuple<Components...>, std::tuple<Events...>, std::tuple<Tags...>>
 {
 private:
 	template<typename Event>
@@ -238,7 +242,6 @@ private:
 	}
 
 public:
-	template<typename... Events>
 	static void InitializeEvents()
 	{
 		using accumulator_type = int[];
