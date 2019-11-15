@@ -26,10 +26,10 @@ MyGame::MyGame(GameContext* context)
 	>;
 	Components::InitializeEvents();
 
-	//if (Components::LoadScene("scene.json", m_scene))
-	//{
-	//}
-	//else
+	if (Components::LoadScene("scene.json", m_scene))
+	{
+	}
+	else
 	{
 		{
 			auto obj1 = m_scene.create();
@@ -38,7 +38,7 @@ MyGame::MyGame(GameContext* context)
 			//m_scene.assign<PrimitiveRenderer>(obj1, PrimitiveRenderer());
 			m_scene.assign<UpdateRenderer>(obj1, UpdateRenderer());
 			//m_scene.assign<entt::tag<"enemy"_hs>>(obj1);
-			m_scene.assign<int>(entt::tag_t{}, obj1);
+			m_scene.assign<int>(entt::tag_t{}, obj1, 4);
 			m_scene.assign<std::string>(entt::tag_t{}, obj1);
 		}
 		{

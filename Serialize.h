@@ -58,6 +58,69 @@ public:
 };
 
 template <typename Entity>
+class ObjectTagSnapshotLoader
+{
+private:
+	cereal::JSONInputArchive& archive;
+	Entity stack = 0;
+
+public:
+	ObjectTagSnapshotLoader(cereal::JSONInputArchive& archive)
+		: archive(archive)
+	{
+	}
+
+public:
+	void operator()(Entity& entity)
+	{
+		if (stack == 0)
+		{
+			entity = 1;
+		}
+		else
+		{
+			assert(false);
+		}
+	}
+
+	template<typename T>
+	void operator()(Entity& entity, T& tag)
+	{
+		if (stack == 0)
+		{
+			assert(false);
+		}
+		else
+		{
+			stack--;
+			archive.startNode();
+			archive(cereal::make_nvp("id", entity));
+			archive(cereal::make_nvp("tag", tag));
+			archive.finishNode();
+		}
+	}
+
+private:
+	template<typename Component>
+	void tag0(entt::SnapshotLoader<Entity>& loader) {
+		const char* name = ComponentNameResolver::name<Component>();
+		if (archive.hasName(name))
+		{
+			archive.setNextName(name);
+			loader.tag<Component>(*this);
+		}
+	}
+
+public:
+	template<typename... Component>
+	void tag(entt::SnapshotLoader<Entity>& loader) {
+		using accumulator_type = int[];
+		accumulator_type accumulator = { 0, (tag0<Component>(loader), 0)... };
+		(void)accumulator;
+	}
+};
+
+template <typename Entity>
 class ObjectComponentSnapshotLoader
 {
 private:
@@ -320,6 +383,7 @@ public:
 			{
 				cereal::JSONInputArchive archive{ storage };
 				ObjectSnapshotLoader<entt::entity> oarchive(archive);
+				ObjectTagSnapshotLoader<entt::entity> tarchive(archive);
 				ObjectComponentSnapshotLoader<entt::entity> carchive(archive);
 				auto snap = scene.restore();
 				{
@@ -344,6 +408,7 @@ public:
 						archive.setNextName("tags");
 						archive.startNode();
 						snap.tag<Tags...>(carchive);
+						tarchive.tag<Components...>(snap);
 						archive.finishNode();
 					}
 					{
@@ -374,8 +439,8 @@ public:
 				// output finishes flushing its contents when it goes out of scope
 				cereal::JSONOutputArchive archive{ storage };
 				ObjectSnapshot<entt::entity> oarchive(archive);
-				ObjectComponentSnapshot<entt::entity> carchive(archive);
 				ObjectTagSnapshot<entt::entity> tarchive(archive);
+				ObjectComponentSnapshot<entt::entity> carchive(archive);
 				auto snap = scene.snapshot();
 				{
 					{

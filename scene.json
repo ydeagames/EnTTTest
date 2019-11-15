@@ -1,6 +1,9 @@
 {
     "entities": {
         "created": [
+            5,
+            4,
+            3,
             2,
             1,
             0
@@ -9,15 +12,15 @@
     },
     "tags": {
         "int": {
-            "id": 0,
-            "tag": 0
+            "id": 3,
+            "tag": 4
         },
         "std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >": {
-            "id": 0,
+            "id": 3,
             "tag": ""
         },
         "Transform": {
-            "id": 0,
+            "id": 3,
             "tag": {
                 "position": {
                     "x": 0.0,
@@ -41,7 +44,7 @@
     "components": {
         "Transform": [
             {
-                "id": 0,
+                "id": 3,
                 "component": {
                     "position": {
                         "x": 0.0,
@@ -62,7 +65,7 @@
                 }
             },
             {
-                "id": 1,
+                "id": 4,
                 "component": {
                     "position": {
                         "x": 1.0,
@@ -83,7 +86,7 @@
                 }
             },
             {
-                "id": 2,
+                "id": 5,
                 "component": {
                     "position": {
                         "x": -1.0,
@@ -106,29 +109,29 @@
         ],
         "MoveUpdater": [
             {
-                "id": 2,
+                "id": 5,
                 "component": {}
             }
         ],
         "MoveDownUpdater": [
             {
-                "id": 2,
+                "id": 5,
                 "component": {}
             }
         ],
         "PrimitiveRenderer": [
             {
-                "id": 1,
+                "id": 4,
                 "component": {}
             },
             {
-                "id": 2,
+                "id": 5,
                 "component": {}
             }
         ],
         "UpdateRenderer": [
             {
-                "id": 0,
+                "id": 3,
                 "component": {}
             }
         ]
