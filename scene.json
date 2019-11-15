@@ -1,50 +1,17 @@
 {
     "entities": {
         "created": [
-            5,
-            4,
-            3,
             2,
             1,
             0
         ],
         "destroyed": []
     },
-    "tags": {
-        "int": {
-            "id": 3,
-            "tag": 4
-        },
-        "std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >": {
-            "id": 3,
-            "tag": ""
-        },
-        "Transform": {
-            "id": 3,
-            "tag": {
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0,
-                    "w": 1.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                }
-            }
-        }
-    },
+    "tags": {},
     "components": {
         "Transform": [
             {
-                "id": 3,
+                "id": 0,
                 "component": {
                     "position": {
                         "x": 0.0,
@@ -65,7 +32,7 @@
                 }
             },
             {
-                "id": 4,
+                "id": 1,
                 "component": {
                     "position": {
                         "x": 1.0,
@@ -86,7 +53,7 @@
                 }
             },
             {
-                "id": 5,
+                "id": 2,
                 "component": {
                     "position": {
                         "x": -1.0,
@@ -109,29 +76,29 @@
         ],
         "MoveUpdater": [
             {
-                "id": 5,
+                "id": 2,
                 "component": {}
             }
         ],
         "MoveDownUpdater": [
             {
-                "id": 5,
+                "id": 2,
                 "component": {}
             }
         ],
         "PrimitiveRenderer": [
             {
-                "id": 4,
+                "id": 1,
                 "component": {}
             },
             {
-                "id": 5,
+                "id": 2,
                 "component": {}
             }
         ],
         "UpdateRenderer": [
             {
-                "id": 3,
+                "id": 0,
                 "component": {}
             }
         ]

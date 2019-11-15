@@ -2,28 +2,11 @@
 #include "MyGame.h"
 #include "Components.h"
 #include "Serialize.h"
+#include "AllComponents.h"
 
 MyGame::MyGame(GameContext* context)
 	: m_context(context)
 {
-	using Components = ComponentManager<
-		std::tuple<
-			Transform,
-			MoveUpdater,
-			MoveDownUpdater,
-			PrimitiveRenderer,
-			UpdateRenderer
-		>,
-		std::tuple<
-			Updatable,
-			Renderable
-		>,
-		std::tuple<
-			int,
-			std::string,
-			Transform
-		>
-	>;
 	Components::InitializeEvents();
 
 	if (Components::LoadScene("scene.json", m_scene))
@@ -33,13 +16,12 @@ MyGame::MyGame(GameContext* context)
 	{
 		{
 			auto obj1 = m_scene.create();
-			m_scene.assign<Transform>(entt::tag_t{}, obj1);
 			m_scene.assign<Transform>(obj1, Transform());
 			//m_scene.assign<PrimitiveRenderer>(obj1, PrimitiveRenderer());
 			m_scene.assign<UpdateRenderer>(obj1, UpdateRenderer());
 			//m_scene.assign<entt::tag<"enemy"_hs>>(obj1);
-			m_scene.assign<int>(entt::tag_t{}, obj1, 4);
-			m_scene.assign<std::string>(entt::tag_t{}, obj1);
+			//m_scene.assign<int>(entt::tag_t{}, obj1, 4);
+			//m_scene.assign<std::string>(entt::tag_t{}, obj1);
 		}
 		{
 			auto obj1 = m_scene.create();

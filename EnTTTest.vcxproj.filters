@@ -46,6 +46,7 @@
     </ClInclude>
     <ClInclude Include="Events.h" />
     <ClInclude Include="Serialize.h" />
+    <ClInclude Include="AllComponents.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

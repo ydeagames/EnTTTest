@@ -166,6 +166,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AllComponents.h" />
     <ClInclude Include="cereal\access.hpp" />
     <ClInclude Include="cereal\cereal.hpp" />
     <ClInclude Include="cereal\macros.hpp" />

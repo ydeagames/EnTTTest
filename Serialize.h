@@ -75,7 +75,7 @@ public:
 	{
 		if (stack == 0)
 		{
-			entity = 1;
+			entity = stack = 1;
 		}
 		else
 		{
@@ -407,7 +407,6 @@ public:
 					{
 						archive.setNextName("tags");
 						archive.startNode();
-						snap.tag<Tags...>(carchive);
 						tarchive.tag<Components...>(snap);
 						archive.finishNode();
 					}
@@ -421,7 +420,7 @@ public:
 				}
 				return true;
 			}
-			catch (cereal::Exception)
+			catch (cereal::Exception e)
 			{
 				// —áŠO
 			}
