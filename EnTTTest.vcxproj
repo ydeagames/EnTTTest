@@ -173,6 +173,7 @@
     <ClInclude Include="cereal\specialize.hpp" />
     <ClInclude Include="cereal\version.hpp" />
     <ClInclude Include="Components.h" />
+    <ClInclude Include="EventBus.h" />
     <ClInclude Include="Serialize.h" />
     <ClInclude Include="DeviceResources.h" />
     <ClInclude Include="entt\entt.hpp" />

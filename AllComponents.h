@@ -2,7 +2,7 @@
 #include "Serialize.h"
 #include "Components.h"
 
-using Components = ComponentManager<
+using Components = ECS::ComponentManager<
 	std::tuple<
 		Transform,
 		MoveUpdater,

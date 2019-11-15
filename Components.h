@@ -40,7 +40,7 @@ public:
 class Transform
 {
 public:
-	static constexpr const char* ComponentName = "Transform";
+	static constexpr const char* Identifier = "Transform";
 
 public:
 	DirectX::SimpleMath::Vector3 position;
@@ -66,7 +66,7 @@ public:
 class MoveUpdater
 {
 public:
-	static constexpr const char* ComponentName = "MoveUpdater";
+	static constexpr const char* Identifier = "MoveUpdater";
 
 public:
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
@@ -81,7 +81,7 @@ public:
 class MoveDownUpdater
 {
 public:
-	static constexpr const char* ComponentName = "MoveDownUpdater";
+	static constexpr const char* Identifier = "MoveDownUpdater";
 
 public:
 	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
@@ -96,7 +96,7 @@ public:
 class PrimitiveRenderer
 {
 public:
-	static constexpr const char* ComponentName = "PrimitiveRenderer";
+	static constexpr const char* Identifier = "PrimitiveRenderer";
 
 public:
 	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
@@ -116,7 +116,7 @@ public:
 class UpdateRenderer : public MoveUpdater, public PrimitiveRenderer
 {
 public:
-	static constexpr const char* ComponentName = "UpdateRenderer";
+	static constexpr const char* Identifier = "UpdateRenderer";
 
 public:
 	template<class Archive>

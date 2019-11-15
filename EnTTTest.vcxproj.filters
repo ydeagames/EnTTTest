@@ -14,6 +14,12 @@
     <Filter Include="Cereal">
       <UniqueIdentifier>{4f1878cb-7270-4bff-930c-c6cfa19176b6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ECS">
+      <UniqueIdentifier>{fc54fed8-fc20-43e2-9db5-7816956f3f05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{8d13bdaa-a684-4ddf-84a2-6590043cc25e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -28,7 +34,6 @@
       <Filter>EnTT</Filter>
     </ClInclude>
     <ClInclude Include="MyGame.h" />
-    <ClInclude Include="Components.h" />
     <ClInclude Include="cereal\macros.hpp">
       <Filter>Cereal</Filter>
     </ClInclude>
@@ -44,9 +49,21 @@
     <ClInclude Include="cereal\cereal.hpp">
       <Filter>Cereal</Filter>
     </ClInclude>
-    <ClInclude Include="Events.h" />
-    <ClInclude Include="Serialize.h" />
-    <ClInclude Include="AllComponents.h" />
+    <ClInclude Include="EventBus.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Serialize.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="AllComponents.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Components.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Events.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -56,7 +73,9 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="MyGame.cpp" />
-    <ClCompile Include="Components.cpp" />
+    <ClCompile Include="Components.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

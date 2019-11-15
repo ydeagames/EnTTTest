@@ -1,486 +1,489 @@
 #pragma once
 
-class ComponentNameResolver
+namespace ECS
 {
-private:
-	template<typename T, typename = decltype(&T::ComponentName)>
-	static const char* name0()
+	class IdentifierResolver
 	{
-		return T::ComponentName;
-	}
+	private:
+		template<typename T, typename = decltype(&T::Identifier)>
+		static const char* name0()
+		{
+			return T::Identifier;
+		}
 
-	template<typename T>
-	static const char* name0(...)
+		template<typename T>
+		static const char* name0(...)
+		{
+			const char* name = typeid(T).name();
+			auto ptr = std::strchr(name, ' ');
+			if (ptr == nullptr)
+				return name;
+			return ptr + 1;
+		}
+
+	public:
+		template<typename T>
+		static const char* name()
+		{
+			return name0<T>();
+		}
+	};
+
+	template <typename Entity>
+	class ObjectSnapshotLoader
 	{
-		const char* name = typeid(T).name();
-		auto ptr = std::strchr(name, ' ');
-		if (ptr == nullptr)
-			return name;
-		return ptr + 1;
-	}
+	private:
+		cereal::JSONInputArchive& archive;
+		Entity stack = 0;
 
-public:
-	template<typename T>
-	static const char* name()
-	{
-		return name0<T>();
-	}
-};
-
-template <typename Entity>
-class ObjectSnapshotLoader
-{
-private:
-	cereal::JSONInputArchive& archive;
-	Entity stack = 0;
-
-public:
-	ObjectSnapshotLoader(cereal::JSONInputArchive& archive)
-		: archive(archive)
-	{
-	}
-
-public:
-	void operator()(Entity& entity)
-	{
-		if (stack == 0)
+	public:
+		ObjectSnapshotLoader(cereal::JSONInputArchive& archive)
+			: archive(archive)
 		{
-			cereal::size_type size;
-			archive.loadSize(size);
-			entity = stack = static_cast<Entity>(size);
 		}
-		else
+
+	public:
+		void operator()(Entity& entity)
 		{
-			stack--;
-			archive(entity);
-		}
-	}
-};
-
-template <typename Entity>
-class ObjectTagSnapshotLoader
-{
-private:
-	cereal::JSONInputArchive& archive;
-	Entity stack = 0;
-
-public:
-	ObjectTagSnapshotLoader(cereal::JSONInputArchive& archive)
-		: archive(archive)
-	{
-	}
-
-public:
-	void operator()(Entity& entity)
-	{
-		if (stack == 0)
-		{
-			entity = stack = 1;
-		}
-		else
-		{
-			assert(false);
-		}
-	}
-
-	template<typename T>
-	void operator()(Entity& entity, T& tag)
-	{
-		if (stack == 0)
-		{
-			assert(false);
-		}
-		else
-		{
-			stack--;
-			archive.startNode();
-			archive(cereal::make_nvp("id", entity));
-			archive(cereal::make_nvp("tag", tag));
-			archive.finishNode();
-		}
-	}
-
-private:
-	template<typename Component>
-	void tag0(entt::SnapshotLoader<Entity>& loader) {
-		const char* name = ComponentNameResolver::name<Component>();
-		if (archive.hasName(name))
-		{
-			archive.setNextName(name);
-			loader.tag<Component>(*this);
-		}
-	}
-
-public:
-	template<typename... Component>
-	void tag(entt::SnapshotLoader<Entity>& loader) {
-		using accumulator_type = int[];
-		accumulator_type accumulator = { 0, (tag0<Component>(loader), 0)... };
-		(void)accumulator;
-	}
-};
-
-template <typename Entity>
-class ObjectComponentSnapshotLoader
-{
-private:
-	cereal::JSONInputArchive& archive;
-	Entity stack = 0;
-
-public:
-	ObjectComponentSnapshotLoader(cereal::JSONInputArchive& archive)
-		: archive(archive)
-	{
-	}
-
-public:
-	void operator()(Entity& entity)
-	{
-		if (stack == 0)
-		{
-			archive.startNode();
-			cereal::size_type size;
-			archive.loadSize(size);
-			entity = stack = static_cast<Entity>(size);
-		}
-		else
-		{
-			assert(false);
-		}
-		if (stack == 0)
-		{
-			archive.finishNode();
-		}
-	}
-
-	template<typename T>
-	void operator()(Entity& entity, T& component)
-	{
-		if (stack == 0)
-		{
-			assert(false);
-		}
-		else
-		{
-			stack--;
-			archive.startNode();
-			archive(cereal::make_nvp("id", entity));
-			archive(cereal::make_nvp("component", component));
-			archive.finishNode();
-		}
-		if (stack == 0)
-		{
-			archive.finishNode();
-		}
-	}
-
-private:
-	template<typename Component>
-	void component0(entt::SnapshotLoader<Entity>& loader) {
-		const char* name = ComponentNameResolver::name<Component>();
-		if (archive.hasName(name))
-		{
-			archive.setNextName(name);
-			loader.component<Component>(*this);
-		}
-	}
-
-public:
-	template<typename... Component>
-	void component(entt::SnapshotLoader<Entity>& loader) {
-		using accumulator_type = int[];
-		accumulator_type accumulator = { 0, (component0<Component>(loader), 0)... };
-		(void)accumulator;
-	}
-};
-
-template <typename Entity>
-class ObjectSnapshot
-{
-private:
-	cereal::JSONOutputArchive& archive;
-	Entity stack = 0;
-
-public:
-	ObjectSnapshot(cereal::JSONOutputArchive& archive)
-		: archive(archive)
-	{
-	}
-
-public:
-	void operator()(Entity entity)
-	{
-		if (stack == 0)
-		{
-			stack = entity;
-		}
-		else
-		{
-			stack--;
-			archive(entity);
-		}
-	}
-};
-
-template <typename Entity>
-class ObjectTagSnapshot
-{
-private:
-	cereal::JSONOutputArchive& archive;
-	Entity stack = 0;
-
-public:
-	ObjectTagSnapshot(cereal::JSONOutputArchive& archive)
-		: archive(archive)
-	{
-	}
-
-public:
-	void operator()(Entity entity)
-	{
-		if (stack == 0)
-		{
-			stack = entity;
-		}
-		else
-		{
-			assert(false);
-		}
-	}
-
-	template<typename T>
-	void operator()(Entity entity, const T& tag)
-	{
-		if (stack == 0)
-		{
-			assert(false);
-		}
-		else
-		{
-			stack--;
-			archive.startNode();
-			archive(cereal::make_nvp("id", entity));
-			archive(cereal::make_nvp("tag", tag));
-			archive.finishNode();
-		}
-	}
-
-private:
-	template<typename Tag>
-	void tag0(entt::Snapshot<Entity>& saver) {
-		archive.setNextName(ComponentNameResolver::name<Tag>());
-		saver.tag<Tag>(*this);
-	}
-
-public:
-	template<typename... Tag>
-	void tag(entt::Snapshot<Entity>& saver) {
-		using accumulator_type = int[];
-		accumulator_type accumulator = { 0, (tag0<Tag>(saver), 0)... };
-		(void)accumulator;
-	}
-};
-
-template <typename Entity>
-class ObjectComponentSnapshot
-{
-private:
-	cereal::JSONOutputArchive& archive;
-	Entity stack = 0;
-
-public:
-	ObjectComponentSnapshot(cereal::JSONOutputArchive& archive)
-		: archive(archive)
-	{
-	}
-
-public:
-	void operator()(Entity entity)
-	{
-		if (stack == 0)
-		{
-			archive.startNode();
-			archive.makeArray();
-			stack = entity;
-		}
-		else
-		{
-			assert(false);
-		}
-		if (stack == 0)
-		{
-			archive.finishNode();
-		}
-	}
-
-	template<typename T>
-	void operator()(Entity entity, const T& component)
-	{
-		if (stack == 0)
-		{
-			assert(false);
-		}
-		else
-		{
-			stack--;
-			archive.startNode();
-			archive(cereal::make_nvp("id", entity));
-			archive(cereal::make_nvp("component", component));
-			archive.finishNode();
-		}
-		if (stack == 0)
-		{
-			archive.finishNode();
-		}
-	}
-
-private:
-	template<typename Component>
-	void component0(entt::Snapshot<Entity>& saver) {
-		archive.setNextName(ComponentNameResolver::name<Component>());
-		saver.component<Component>(*this);
-	}
-
-public:
-	template<typename... Component>
-	void component(entt::Snapshot<Entity>& saver) {
-		using accumulator_type = int[];
-		accumulator_type accumulator = { 0, (component0<Component>(saver), 0)... };
-		(void)accumulator;
-	}
-};
-
-// Declaration of a template
-template<typename Components, typename Events, typename Tags>
-class ComponentManager;
-
-template<typename... Components, typename... Events, typename... Tags>
-class ComponentManager<std::tuple<Components...>, std::tuple<Events...>, std::tuple<Tags...>>
-{
-private:
-	template<typename Event>
-	static void InitializeEvent()
-	{
-		using accumulator_type = int[];
-		accumulator_type accumulator = { 0, (Event::Register<Components>(), 0)... };
-		(void)accumulator;
-	}
-
-public:
-	static void InitializeEvents()
-	{
-		using accumulator_type = int[];
-		accumulator_type accumulator = { 0, (InitializeEvent<Events>(), 0)... };
-		(void)accumulator;
-	}
-
-	static bool LoadScene(const std::string& location, entt::registry& scene)
-	{
-		std::ifstream storage(location);
-		if (storage)
-		{
-			try
+			if (stack == 0)
 			{
-				cereal::JSONInputArchive archive{ storage };
-				ObjectSnapshotLoader<entt::entity> oarchive(archive);
-				ObjectTagSnapshotLoader<entt::entity> tarchive(archive);
-				ObjectComponentSnapshotLoader<entt::entity> carchive(archive);
-				auto snap = scene.restore();
+				cereal::size_type size;
+				archive.loadSize(size);
+				entity = stack = static_cast<Entity>(size);
+			}
+			else
+			{
+				stack--;
+				archive(entity);
+			}
+		}
+	};
+
+	template <typename Entity>
+	class ObjectTagSnapshotLoader
+	{
+	private:
+		cereal::JSONInputArchive& archive;
+		Entity stack = 0;
+
+	public:
+		ObjectTagSnapshotLoader(cereal::JSONInputArchive& archive)
+			: archive(archive)
+		{
+		}
+
+	public:
+		void operator()(Entity& entity)
+		{
+			if (stack == 0)
+			{
+				entity = stack = 1;
+			}
+			else
+			{
+				assert(false);
+			}
+		}
+
+		template<typename T>
+		void operator()(Entity& entity, T& tag)
+		{
+			if (stack == 0)
+			{
+				assert(false);
+			}
+			else
+			{
+				stack--;
+				archive.startNode();
+				archive(cereal::make_nvp("id", entity));
+				archive(cereal::make_nvp("tag", tag));
+				archive.finishNode();
+			}
+		}
+
+	private:
+		template<typename Component>
+		void tag0(entt::SnapshotLoader<Entity>& loader) {
+			const char* name = IdentifierResolver::name<Component>();
+			if (archive.hasName(name))
+			{
+				archive.setNextName(name);
+				loader.tag<Component>(*this);
+			}
+		}
+
+	public:
+		template<typename... Component>
+		void tag(entt::SnapshotLoader<Entity>& loader) {
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (tag0<Component>(loader), 0)... };
+			(void)accumulator;
+		}
+	};
+
+	template <typename Entity>
+	class ObjectComponentSnapshotLoader
+	{
+	private:
+		cereal::JSONInputArchive& archive;
+		Entity stack = 0;
+
+	public:
+		ObjectComponentSnapshotLoader(cereal::JSONInputArchive& archive)
+			: archive(archive)
+		{
+		}
+
+	public:
+		void operator()(Entity& entity)
+		{
+			if (stack == 0)
+			{
+				archive.startNode();
+				cereal::size_type size;
+				archive.loadSize(size);
+				entity = stack = static_cast<Entity>(size);
+			}
+			else
+			{
+				assert(false);
+			}
+			if (stack == 0)
+			{
+				archive.finishNode();
+			}
+		}
+
+		template<typename T>
+		void operator()(Entity& entity, T& component)
+		{
+			if (stack == 0)
+			{
+				assert(false);
+			}
+			else
+			{
+				stack--;
+				archive.startNode();
+				archive(cereal::make_nvp("id", entity));
+				archive(cereal::make_nvp("component", component));
+				archive.finishNode();
+			}
+			if (stack == 0)
+			{
+				archive.finishNode();
+			}
+		}
+
+	private:
+		template<typename Component>
+		void component0(entt::SnapshotLoader<Entity>& loader) {
+			const char* name = IdentifierResolver::name<Component>();
+			if (archive.hasName(name))
+			{
+				archive.setNextName(name);
+				loader.component<Component>(*this);
+			}
+		}
+
+	public:
+		template<typename... Component>
+		void component(entt::SnapshotLoader<Entity>& loader) {
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (component0<Component>(loader), 0)... };
+			(void)accumulator;
+		}
+	};
+
+	template <typename Entity>
+	class ObjectSnapshot
+	{
+	private:
+		cereal::JSONOutputArchive& archive;
+		Entity stack = 0;
+
+	public:
+		ObjectSnapshot(cereal::JSONOutputArchive& archive)
+			: archive(archive)
+		{
+		}
+
+	public:
+		void operator()(Entity entity)
+		{
+			if (stack == 0)
+			{
+				stack = entity;
+			}
+			else
+			{
+				stack--;
+				archive(entity);
+			}
+		}
+	};
+
+	template <typename Entity>
+	class ObjectTagSnapshot
+	{
+	private:
+		cereal::JSONOutputArchive& archive;
+		Entity stack = 0;
+
+	public:
+		ObjectTagSnapshot(cereal::JSONOutputArchive& archive)
+			: archive(archive)
+		{
+		}
+
+	public:
+		void operator()(Entity entity)
+		{
+			if (stack == 0)
+			{
+				stack = entity;
+			}
+			else
+			{
+				assert(false);
+			}
+		}
+
+		template<typename T>
+		void operator()(Entity entity, const T& tag)
+		{
+			if (stack == 0)
+			{
+				assert(false);
+			}
+			else
+			{
+				stack--;
+				archive.startNode();
+				archive(cereal::make_nvp("id", entity));
+				archive(cereal::make_nvp("tag", tag));
+				archive.finishNode();
+			}
+		}
+
+	private:
+		template<typename Tag>
+		void tag0(entt::Snapshot<Entity>& saver) {
+			archive.setNextName(IdentifierResolver::name<Tag>());
+			saver.tag<Tag>(*this);
+		}
+
+	public:
+		template<typename... Tag>
+		void tag(entt::Snapshot<Entity>& saver) {
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (tag0<Tag>(saver), 0)... };
+			(void)accumulator;
+		}
+	};
+
+	template <typename Entity>
+	class ObjectComponentSnapshot
+	{
+	private:
+		cereal::JSONOutputArchive& archive;
+		Entity stack = 0;
+
+	public:
+		ObjectComponentSnapshot(cereal::JSONOutputArchive& archive)
+			: archive(archive)
+		{
+		}
+
+	public:
+		void operator()(Entity entity)
+		{
+			if (stack == 0)
+			{
+				archive.startNode();
+				archive.makeArray();
+				stack = entity;
+			}
+			else
+			{
+				assert(false);
+			}
+			if (stack == 0)
+			{
+				archive.finishNode();
+			}
+		}
+
+		template<typename T>
+		void operator()(Entity entity, const T& component)
+		{
+			if (stack == 0)
+			{
+				assert(false);
+			}
+			else
+			{
+				stack--;
+				archive.startNode();
+				archive(cereal::make_nvp("id", entity));
+				archive(cereal::make_nvp("component", component));
+				archive.finishNode();
+			}
+			if (stack == 0)
+			{
+				archive.finishNode();
+			}
+		}
+
+	private:
+		template<typename Component>
+		void component0(entt::Snapshot<Entity>& saver) {
+			archive.setNextName(IdentifierResolver::name<Component>());
+			saver.component<Component>(*this);
+		}
+
+	public:
+		template<typename... Component>
+		void component(entt::Snapshot<Entity>& saver) {
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (component0<Component>(saver), 0)... };
+			(void)accumulator;
+		}
+	};
+
+	// Declaration of a template
+	template<typename Components, typename Events, typename Tags>
+	class ComponentManager;
+
+	template<typename... Components, typename... Events, typename... Tags>
+	class ComponentManager<std::tuple<Components...>, std::tuple<Events...>, std::tuple<Tags...>>
+	{
+	private:
+		template<typename Event>
+		static void InitializeEvent()
+		{
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (Event::Register<Components>(), 0)... };
+			(void)accumulator;
+		}
+
+	public:
+		static void InitializeEvents()
+		{
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (InitializeEvent<Events>(), 0)... };
+			(void)accumulator;
+		}
+
+		static bool LoadScene(const std::string& location, entt::registry& scene)
+		{
+			std::ifstream storage(location);
+			if (storage)
+			{
+				try
 				{
+					cereal::JSONInputArchive archive{ storage };
+					ObjectSnapshotLoader<entt::entity> oarchive(archive);
+					ObjectTagSnapshotLoader<entt::entity> tarchive(archive);
+					ObjectComponentSnapshotLoader<entt::entity> carchive(archive);
+					auto snap = scene.restore();
 					{
-						archive.setNextName("entities");
-						archive.startNode();
 						{
-							archive.setNextName("created");
+							archive.setNextName("entities");
 							archive.startNode();
-							snap.entities(oarchive);
+							{
+								archive.setNextName("created");
+								archive.startNode();
+								snap.entities(oarchive);
+								archive.finishNode();
+							}
+							{
+								archive.setNextName("destroyed");
+								archive.startNode();
+								snap.destroyed(oarchive);
+								archive.finishNode();
+							}
 							archive.finishNode();
 						}
 						{
-							archive.setNextName("destroyed");
+							archive.setNextName("tags");
 							archive.startNode();
-							snap.destroyed(oarchive);
+							tarchive.tag<Components...>(snap);
 							archive.finishNode();
 						}
-						archive.finishNode();
+						{
+							archive.setNextName("components");
+							archive.startNode();
+							carchive.component<Components...>(snap);
+							archive.finishNode();
+						}
+						//snap.orphans();
 					}
-					{
-						archive.setNextName("tags");
-						archive.startNode();
-						tarchive.tag<Components...>(snap);
-						archive.finishNode();
-					}
-					{
-						archive.setNextName("components");
-						archive.startNode();
-						carchive.component<Components...>(snap);
-						archive.finishNode();
-					}
-					//snap.orphans();
+					return true;
 				}
-				return true;
-			}
-			catch (cereal::Exception e)
-			{
-				// 例外
-			}
-		}
-		return false;
-	}
-
-	static bool SaveScene(const std::string& location, const entt::registry& scene)
-	{
-		std::ofstream storage(location);
-		if (storage)
-		{
-			try
-			{
-				// output finishes flushing its contents when it goes out of scope
-				cereal::JSONOutputArchive archive{ storage };
-				ObjectSnapshot<entt::entity> oarchive(archive);
-				ObjectTagSnapshot<entt::entity> tarchive(archive);
-				ObjectComponentSnapshot<entt::entity> carchive(archive);
-				auto snap = scene.snapshot();
+				catch (cereal::Exception e)
 				{
-					{
-						archive.setNextName("entities");
-						archive.startNode();
-						{
-							archive.setNextName("created");
-							archive.startNode();
-							archive.makeArray();
-							snap.entities(oarchive);
-							archive.finishNode();
-						}
-						{
-							archive.setNextName("destroyed");
-							archive.startNode();
-							archive.makeArray();
-							snap.destroyed(oarchive);
-							archive.finishNode();
-						}
-						archive.finishNode();
-					}
-					{
-						archive.setNextName("tags");
-						archive.startNode();
-						tarchive.tag<Tags...>(snap);
-						archive.finishNode();
-					}
-					{
-						archive.setNextName("components");
-						archive.startNode();
-						carchive.component<Components...>(snap);
-						archive.finishNode();
-					}
+					// 例外
 				}
-				return true;
 			}
-			catch (cereal::Exception)
-			{
-				// 例外
-			}
+			return false;
 		}
-		return false;
-	}
-};
+
+		static bool SaveScene(const std::string& location, const entt::registry& scene)
+		{
+			std::ofstream storage(location);
+			if (storage)
+			{
+				try
+				{
+					// output finishes flushing its contents when it goes out of scope
+					cereal::JSONOutputArchive archive{ storage };
+					ObjectSnapshot<entt::entity> oarchive(archive);
+					ObjectTagSnapshot<entt::entity> tarchive(archive);
+					ObjectComponentSnapshot<entt::entity> carchive(archive);
+					auto snap = scene.snapshot();
+					{
+						{
+							archive.setNextName("entities");
+							archive.startNode();
+							{
+								archive.setNextName("created");
+								archive.startNode();
+								archive.makeArray();
+								snap.entities(oarchive);
+								archive.finishNode();
+							}
+							{
+								archive.setNextName("destroyed");
+								archive.startNode();
+								archive.makeArray();
+								snap.destroyed(oarchive);
+								archive.finishNode();
+							}
+							archive.finishNode();
+						}
+						{
+							archive.setNextName("tags");
+							archive.startNode();
+							tarchive.tag<Tags...>(snap);
+							archive.finishNode();
+						}
+						{
+							archive.setNextName("components");
+							archive.startNode();
+							carchive.component<Components...>(snap);
+							archive.finishNode();
+						}
+					}
+					return true;
+				}
+				catch (cereal::Exception)
+				{
+					// 例外
+				}
+			}
+			return false;
+		}
+	};
+}
