@@ -9,38 +9,38 @@ MyGame::MyGame(GameContext* context)
 {
 	Components::InitializeEvents();
 
-	if (Components::LoadScene("scene.json", m_scene))
+	if (m_scene.Load("scene.json"))
 	{
 	}
 	else
 	{
 		{
-			auto obj1 = m_scene.create();
-			m_scene.assign<Transform>(obj1, Transform());
-			//m_scene.assign<PrimitiveRenderer>(obj1, PrimitiveRenderer());
-			m_scene.assign<UpdateRenderer>(obj1, UpdateRenderer());
-			//m_scene.assign<entt::tag<"enemy"_hs>>(obj1);
-			//m_scene.assign<int>(entt::tag_t{}, obj1, 4);
-			//m_scene.assign<std::string>(entt::tag_t{}, obj1);
+			auto obj1 = m_scene.Create();
+			obj1.AddComponent<Transform>(Transform());
+			//obj1.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
+			obj1.AddComponent<UpdateRenderer>(UpdateRenderer());
+			//obj1.AddTag<entt::tag<"enemy"_hs>>(obj1);
+			//obj1.AddTag<int>(4);
+			//obj1.AddTag<std::string>(obj1);
 		}
 		{
-			auto obj1 = m_scene.create();
+			auto obj1 = m_scene.Create();
 			auto transform = Transform();
 			transform.position.x = 1;
-			m_scene.assign<Transform>(obj1, std::move(transform));
-			m_scene.assign<PrimitiveRenderer>(obj1, PrimitiveRenderer());
+			obj1.AddComponent<Transform>(std::move(transform));
+			obj1.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
 		}
 		{
-			auto obj1 = m_scene.create();
+			auto obj1 = m_scene.Create();
 			auto transform = Transform();
 			transform.position.x = -1;
-			m_scene.assign<Transform>(obj1, std::move(transform));
-			m_scene.assign<PrimitiveRenderer>(obj1, PrimitiveRenderer());
-			m_scene.assign<MoveUpdater>(obj1, MoveUpdater());
-			m_scene.assign<MoveDownUpdater>(obj1, MoveDownUpdater());
+			obj1.AddComponent<Transform>(std::move(transform));
+			obj1.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
+			obj1.AddComponent<MoveUpdater>(MoveUpdater());
+			obj1.AddComponent<MoveDownUpdater>(MoveDownUpdater());
 		}
 
-		Components::SaveScene("scene.json", m_scene);
+		m_scene.Save("scene.json");
 	}
 }
 

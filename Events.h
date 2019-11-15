@@ -11,7 +11,7 @@ public:
 		ECS::EventBus<Updatable>::Register<T>(&T::Update);
 	}
 
-	static void Update(GameContext& ctx, entt::DefaultRegistry& registry)
+	static void Update(GameContext& ctx, Scene& registry)
 	{
 		ECS::EventBus<Updatable>::Post(ctx, registry);
 	}
@@ -29,17 +29,17 @@ public:
 		ECS::EventBus<Renderable, 1>::Register<T>(&T::RenderFinalize);
 	}
 
-	static void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry)
+	static void RenderInitialize(GameContext& ctx, Scene& registry)
 	{
 		ECS::EventBus<Renderable, 0>::Post(ctx, registry);
 	}
 
-	static void Render(GameContext& ctx, entt::DefaultRegistry& registry)
+	static void Render(GameContext& ctx, Scene& registry)
 	{
 		ECS::EventBus<Renderable>::Post(ctx, registry);
 	}
 
-	static void RenderFinalize(GameContext& ctx, entt::DefaultRegistry& registry)
+	static void RenderFinalize(GameContext& ctx, Scene& registry)
 	{
 		ECS::EventBus<Renderable, 1>::Post(ctx, registry);
 	}

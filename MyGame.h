@@ -4,7 +4,7 @@
 class MyGame
 {
 private:
-	entt::DefaultRegistry m_scene;
+	Scene m_scene;
 	GameContext* m_context;
 
 public:

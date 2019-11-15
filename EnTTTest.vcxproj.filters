@@ -64,6 +64,12 @@
     <ClInclude Include="Events.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -75,6 +81,12 @@
     <ClCompile Include="MyGame.cpp" />
     <ClCompile Include="Components.cpp">
       <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>ECS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

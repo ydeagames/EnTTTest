@@ -18,15 +18,6 @@ namespace DirectX
 	}
 }
 
-//namespace entt
-//{
-//	template<typename Archive>
-//	void serialize(Archive& archive, tag<"enemy"_hs>& tag) {
-//		static std::string name = "enemy";
-//		archive(name);
-//	}
-//}
-
 class GameContext
 {
 public:
@@ -69,7 +60,7 @@ public:
 	static constexpr const char* Identifier = "MoveUpdater";
 
 public:
-	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
+	void Update(GameContext& ctx, GameObject& entity);
 
 public:
 	template<class Archive>
@@ -84,7 +75,7 @@ public:
 	static constexpr const char* Identifier = "MoveDownUpdater";
 
 public:
-	void Update(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
+	void Update(GameContext& ctx, GameObject& entity);
 
 public:
 	template<class Archive>
@@ -102,9 +93,9 @@ public:
 	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
 
 public:
-	void RenderInitialize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
-	void Render(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
-	void RenderFinalize(GameContext& ctx, entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
+	void RenderInitialize(GameContext& ctx, GameObject& entity);
+	void Render(GameContext& ctx, GameObject& entity);
+	void RenderFinalize(GameContext& ctx, GameObject& entity);
 
 public:
 	template<class Archive>
