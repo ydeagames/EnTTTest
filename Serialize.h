@@ -1,18 +1,20 @@
 #pragma once
 
+class GameContext;
+
 namespace ECS
 {
 	class IdentifierResolver
 	{
 	private:
 		template<typename T, typename = decltype(&T::Identifier)>
-		static const char* name0()
+		static const char* name0(int)
 		{
 			return T::Identifier;
 		}
 
 		template<typename T>
-		static const char* name0(...)
+		static const char* name0(bool)
 		{
 			const char* name = typeid(T).name();
 			auto ptr = std::strchr(name, ' ');
@@ -25,7 +27,7 @@ namespace ECS
 		template<typename T>
 		static const char* name()
 		{
-			return name0<T>();
+			return name0<T>(0);
 		}
 	};
 
@@ -352,6 +354,34 @@ namespace ECS
 		}
 	};
 
+	class ComponentGui
+	{
+	private:
+		template<typename Registry, typename Component, typename = decltype(&Component::EditorGui)>
+		static void EditorWidget0(int, GameContext& ctx, Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
+		{
+			auto* ctxptr = &ctx;
+			editor.registerComponentWidgetFn(
+				reg.type<Component>(),
+				[ctxptr](auto& reg, auto entity) {
+					GameObject o{ &reg, entity };
+					reg.get<Component>(entity).EditorGui(*ctxptr, o);
+				});
+		}
+
+		template<typename Registry, typename Component>
+		static void EditorWidget0(bool, GameContext& ctx, Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
+		{
+		}
+
+	public:
+		template<typename Registry, typename Component>
+		static void EditorWidget(GameContext& ctx, Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
+		{
+			EditorWidget0<Registry, Component>(0, ctx, reg, editor);
+		}
+	};
+
 	// Declaration of a template
 	template<typename Components, typename Events, typename Tags>
 	class ComponentManager;
@@ -368,11 +398,26 @@ namespace ECS
 			(void)accumulator;
 		}
 
+		template<typename Registry, typename Component>
+		static void InitializeEditorComponent(GameContext& ctx, Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
+		{
+			editor.registerTrivial<Component>(reg, ECS::IdentifierResolver::name<Component>());
+			ComponentGui::EditorWidget<Registry, Component>(ctx, reg, editor);
+		}
+
 	public:
 		static void InitializeEvents()
 		{
 			using accumulator_type = int[];
 			accumulator_type accumulator = { 0, (InitializeEvent<Events>(), 0)... };
+			(void)accumulator;
+		}
+
+		template<typename Registry>
+		static void InitializeEditorComponents(GameContext& ctx, Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
+		{
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (InitializeEditorComponent<Registry, Components>(ctx, reg, editor), 0)... };
 			(void)accumulator;
 		}
 

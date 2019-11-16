@@ -43,6 +43,8 @@ public:
 	{
 		archive(CEREAL_NVP(position), CEREAL_NVP(rotation), CEREAL_NVP(scale));
 	}
+
+	void EditorGui(GameContext& ctx, GameObject& entity);
 };
 
 class MoveUpdater

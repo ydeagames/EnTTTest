@@ -23,6 +23,12 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{5330ab80-b6fb-4458-8944-368b0e3dae53}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Cereal\archives">
+      <UniqueIdentifier>{afc6d5fc-4c59-49b4-8c10-20751ec22a77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Cereal\details">
+      <UniqueIdentifier>{8934b4fe-8b5f-4d77-8778-57e8fa341e1c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -101,6 +107,39 @@
     <ClInclude Include="ImGuiStyles.h" />
     <ClInclude Include="GameContext.h">
       <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\archives\portable_binary.hpp">
+      <Filter>Cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\archives\xml.hpp">
+      <Filter>Cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\archives\adapters.hpp">
+      <Filter>Cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\archives\binary.hpp">
+      <Filter>Cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\archives\json.hpp">
+      <Filter>Cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\static_object.hpp">
+      <Filter>Cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\traits.hpp">
+      <Filter>Cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\util.hpp">
+      <Filter>Cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\helpers.hpp">
+      <Filter>Cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\polymorphic_impl.hpp">
+      <Filter>Cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\polymorphic_impl_fwd.hpp">
+      <Filter>Cereal\details</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
