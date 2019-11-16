@@ -6,7 +6,7 @@ using namespace DirectX::SimpleMath;
 
 void PrimitiveRenderer::RenderInitialize(GameContext& ctx, GameObject& entity)
 {
-	m_model = GeometricPrimitive::CreateSphere(ctx.dr->GetD3DDeviceContext());
+	m_model = GeometricPrimitive::CreateTeapot(ctx.dr->GetD3DDeviceContext());
 }
 
 void PrimitiveRenderer::Render(GameContext& ctx, GameObject& entity)

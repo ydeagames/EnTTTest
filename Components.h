@@ -32,9 +32,9 @@ public:
 public:
 	DirectX::SimpleMath::Matrix GetMatrix()
 	{
-		return DirectX::SimpleMath::Matrix::CreateTranslation(position)
+		return DirectX::SimpleMath::Matrix::CreateScale(scale)
 			* DirectX::SimpleMath::Matrix::CreateFromQuaternion(rotation)
-			* DirectX::SimpleMath::Matrix::CreateScale(scale);
+			* DirectX::SimpleMath::Matrix::CreateTranslation(position);
 	}
 
 public:
