@@ -3,19 +3,20 @@
 #include "Components.h"
 #include "Serialize.h"
 #include "AllComponents.h"
+#include "ImGuiManager.h"
 
 MyGame::MyGame(GameContext* context)
 	: m_context(context)
 {
 	Components::InitializeEvents();
 
+	auto obj1 = m_scene.Create();
 	if (m_scene.Load("scene.json"))
 	{
 	}
 	else
 	{
 		{
-			auto obj1 = m_scene.Create();
 			obj1.AddComponent<Transform>(Transform());
 			//obj1.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
 			obj1.AddComponent<UpdateRenderer>(UpdateRenderer());
@@ -24,29 +25,49 @@ MyGame::MyGame(GameContext* context)
 			//obj1.AddTag<std::string>(obj1);
 		}
 		{
-			auto obj1 = m_scene.Create();
+			auto obj = m_scene.Create();
 			auto transform = Transform();
 			transform.position.x = 1;
-			obj1.AddComponent<Transform>(std::move(transform));
-			obj1.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
+			obj.AddComponent<Transform>(std::move(transform));
+			obj.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
 		}
 		{
-			auto obj1 = m_scene.Create();
+			auto obj = m_scene.Create();
 			auto transform = Transform();
 			transform.position.x = -1;
-			obj1.AddComponent<Transform>(std::move(transform));
-			obj1.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
-			obj1.AddComponent<MoveUpdater>(MoveUpdater());
-			obj1.AddComponent<MoveDownUpdater>(MoveDownUpdater());
+			obj.AddComponent<Transform>(std::move(transform));
+			obj.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
+			obj.AddComponent<MoveUpdater>(MoveUpdater());
+			obj.AddComponent<MoveDownUpdater>(MoveDownUpdater());
 		}
 
 		m_scene.Save("scene.json");
 	}
+
+	auto& reg = m_scene.registry;
+	auto& editor = m_context->Register<MM::ImGuiEntityEditor<entt::registry>>();
+	// "registerTrivial" registers the type, name, create and destroy functions for trivialy costructable(and destroyable) types.
+	// you just need to provide a "widget" function if you use this method.
+	editor.registerTrivial<Transform>(reg, "Transform");
+
+	editor.registerComponentWidgetFn(
+		reg.type<Transform>(),
+		[](entt::registry& reg, entt::registry::entity_type e) {
+			auto& t = reg.get<Transform>(e);
+
+			// the "##Transform" ensures that you can use the name "x" in multiple lables
+			ImGui::DragFloat("x##Transform", &t.position.x, 0.1f);
+			ImGui::DragFloat("y##Transform", &t.position.y, 0.1f);
+			ImGui::DragFloat("y##Transform", &t.position.z, 0.1f);
+		});
 }
 
 void MyGame::Update()
 {
 	Updatable::Update(*m_context, m_scene);
+
+	// GUI
+	m_context->Get<ImGuiManager>().Update(*m_context);
 }
 
 void MyGame::RenderInitialize()
@@ -56,7 +77,21 @@ void MyGame::RenderInitialize()
 
 void MyGame::Render()
 {
+	// GUI
+	m_context->Get<ImGuiManager>().BeforeRender(*m_context);
+
 	Renderable::Render(*m_context, m_scene);
+
+	m_context->Get<ImGuiManager>().Render(*m_context);
+
+	// render editor
+	auto& reg = m_scene.registry;
+	auto& editor = m_context->Get<MM::ImGuiEntityEditor<entt::registry>>();
+	entt::entity e = 0;
+	editor.renderImGui(reg, e);
+
+	// GUI
+	m_context->Get<ImGuiManager>().AfterRender(*m_context);
 }
 
 void MyGame::RenderFinalize()

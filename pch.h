@@ -101,6 +101,7 @@ namespace entt
 {
 	using registry = entt::DefaultRegistry;
 	using entity = registry::entity_type;
+	using component = registry::component_type;
 	template<entity Value>
 	using tag = std::integral_constant<entity, Value>;
 }
@@ -108,6 +109,14 @@ namespace entt
 // Cereal
 #include <cereal/cereal.hpp>
 #include <cereal/archives/json.hpp>
+
+// ImGui
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_dx11.h>
+#include <imgui/imgui_impl_win32.h>
+
+// ImGui + EnTT
+#include <imgui/imgui_entt_entity_editor.hpp>
 
 namespace DX
 {

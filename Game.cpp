@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "Game.h"
+#include "ImGuiManager.h"
 
 extern void ExitGame();
 
@@ -14,21 +15,26 @@ using Microsoft::WRL::ComPtr;
 Game::Game() noexcept(false)
 	: m_myGame(&m_context)
 {
-    m_deviceResources = std::make_unique<DX::DeviceResources>();
+	m_context.Register<DX::DeviceResources>();
+    m_deviceResources = &m_context.Get<DX::DeviceResources>();
     m_deviceResources->RegisterDeviceNotify(this);
-	m_context.dr = m_deviceResources.get();
+	m_context.dr = m_deviceResources;
 }
 
 // Initialize the Direct3D resources required to run.
 void Game::Initialize(HWND window, int width, int height)
 {
     m_deviceResources->SetWindow(window, width, height);
+	m_context.Register<HWND>(window);
 
     m_deviceResources->CreateDeviceResources();
     CreateDeviceDependentResources();
 
     m_deviceResources->CreateWindowSizeDependentResources();
     CreateWindowSizeDependentResources();
+
+	auto imgui = m_context.Register<ImGuiManager>();
+	imgui.Initialize(m_context);
 
     // TODO: Change the timer settings if you want something other than the default variable timestep mode.
     // e.g. for 60 FPS fixed timestep update logic, call:

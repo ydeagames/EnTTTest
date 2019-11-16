@@ -1,6 +1,7 @@
 #pragma once
 #include "Events.h"
 #include "DeviceResources.h"
+#include "GameContext.h"
 
 namespace DirectX
 {
@@ -17,16 +18,6 @@ namespace DirectX
 		}
 	}
 }
-
-class GameContext
-{
-public:
-	DirectX::SimpleMath::Matrix view;
-	DirectX::SimpleMath::Matrix projection;
-
-public:
-	DX::DeviceResources* dr = nullptr;
-};
 
 class Transform
 {
