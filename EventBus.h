@@ -53,7 +53,7 @@ namespace ECS
 					{
 						void on(entt::registry& registry, entt::entity entity)
 						{
-							registry.remove<started_t<T>>(entity);
+							registry.reset<started_t<T>>(entity);
 						}
 					} listener;
 					entt::registry& registry = *o.registry;

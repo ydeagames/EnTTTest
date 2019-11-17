@@ -183,6 +183,7 @@
     <ClInclude Include="cereal\macros.hpp" />
     <ClInclude Include="cereal\specialize.hpp" />
     <ClInclude Include="cereal\version.hpp" />
+    <ClInclude Include="Component.h" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="EventBus.h" />
     <ClInclude Include="GameContext.h" />

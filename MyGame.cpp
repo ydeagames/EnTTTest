@@ -9,12 +9,18 @@ MyGame::MyGame(GameContext* context)
 	: m_context(context)
 {
 	Components::InitializeEvents();
+	//m_scene.registry.prepare<MoveUpdater, Transform>();
+	//m_scene.registry.prepare<MoveDownUpdater, Transform>();
+	//m_scene.registry.prepare<PrimitiveRenderer, Transform>();
+	//m_scene.registry.prepare<UpdateRenderer, Transform>();
+	//ECS::Dependency<entt::registry, PrimitiveRenderer>(m_scene.registry).DependsOn<Transform>();
+	Components::InitializeDependency(m_scene.registry);
 
 	auto obj1 = m_scene.Create();
-	if (m_scene.Load("scene.json"))
-	{
-	}
-	else
+	//if (m_scene.Load("scene.json"))
+	//{
+	//}
+	//else
 	{
 		{
 			obj1.AddComponent<Transform>(Transform());
@@ -28,18 +34,19 @@ MyGame::MyGame(GameContext* context)
 			auto obj = m_scene.Create();
 			auto transform = Transform();
 			transform.position.x = 1;
-			obj.AddComponent<Transform>(std::move(transform));
-			obj.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
+			obj.AddComponent<PrimitiveRenderer>();
+			//obj.AddComponent<Transform>(std::move(transform));
+			//obj.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
 		}
-		{
-			auto obj = m_scene.Create();
-			auto transform = Transform();
-			transform.position.x = -1;
-			obj.AddComponent<Transform>(std::move(transform));
-			obj.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
-			obj.AddComponent<MoveUpdater>(MoveUpdater());
-			obj.AddComponent<MoveDownUpdater>(MoveDownUpdater());
-		}
+		//{
+		//	auto obj = m_scene.Create();
+		//	auto transform = Transform();
+		//	transform.position.x = -1;
+		//	obj.AddComponent<Transform>(std::move(transform));
+		//	obj.AddComponent<PrimitiveRenderer>(PrimitiveRenderer());
+		//	obj.AddComponent<MoveUpdater>(MoveUpdater());
+		//	obj.AddComponent<MoveDownUpdater>(MoveDownUpdater());
+		//}
 
 		m_scene.Save("scene.json");
 	}

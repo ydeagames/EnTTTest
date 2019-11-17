@@ -141,6 +141,9 @@
     <ClInclude Include="cereal\details\polymorphic_impl_fwd.hpp">
       <Filter>Cereal\details</Filter>
     </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

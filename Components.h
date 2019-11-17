@@ -2,6 +2,7 @@
 #include "Events.h"
 #include "DeviceResources.h"
 #include "GameContext.h"
+#include "Component.h"
 
 namespace DirectX
 {
@@ -84,6 +85,12 @@ class PrimitiveRenderer
 public:
 	static constexpr const char* Identifier = "PrimitiveRenderer";
 
+	template<typename Component>
+	static void Dependency(Component& component)
+	{
+		component.DependsOn<Transform>();
+	}
+
 public:
 	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
 
@@ -102,6 +109,12 @@ class UpdateRenderer : public MoveUpdater, public PrimitiveRenderer
 {
 public:
 	static constexpr const char* Identifier = "UpdateRenderer";
+
+	template<typename Component>
+	static void Dependency(Component& component)
+	{
+		component.DependsOn<Transform>();
+	}
 
 public:
 	template<class Archive>
