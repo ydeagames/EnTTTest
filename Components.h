@@ -52,6 +52,14 @@ class MoveUpdater
 {
 public:
 	static constexpr const char* Identifier = "MoveUpdater";
+
+	template<typename Component>
+	static void Dependency(Component& component)
+	{
+		component.DependsOn<Transform>();
+	}
+
+public:
 	DirectX::SimpleMath::Vector3 vel;
 
 public:
@@ -69,6 +77,12 @@ class MoveDownUpdater
 {
 public:
 	static constexpr const char* Identifier = "MoveDownUpdater";
+
+	template<typename Component>
+	static void Dependency(Component& component)
+	{
+		component.DependsOn<Transform>();
+	}
 
 public:
 	void Update(GameContext& ctx, GameObject& entity);
@@ -113,7 +127,7 @@ public:
 	template<typename Component>
 	static void Dependency(Component& component)
 	{
-		component.DependsOn<Transform>();
+		component.DependsOn<MoveUpdater, Transform, PrimitiveRenderer>();
 	}
 
 public:

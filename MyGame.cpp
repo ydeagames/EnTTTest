@@ -9,11 +9,6 @@ MyGame::MyGame(GameContext* context)
 	: m_context(context)
 {
 	Components::InitializeEvents();
-	//m_scene.registry.prepare<MoveUpdater, Transform>();
-	//m_scene.registry.prepare<MoveDownUpdater, Transform>();
-	//m_scene.registry.prepare<PrimitiveRenderer, Transform>();
-	//m_scene.registry.prepare<UpdateRenderer, Transform>();
-	//ECS::Dependency<entt::registry, PrimitiveRenderer>(m_scene.registry).DependsOn<Transform>();
 	Components::InitializeDependency(m_scene.registry);
 
 	auto obj1 = m_scene.Create();
