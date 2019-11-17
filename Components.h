@@ -51,8 +51,10 @@ class MoveUpdater
 {
 public:
 	static constexpr const char* Identifier = "MoveUpdater";
+	DirectX::SimpleMath::Vector3 vel;
 
 public:
+	void Start(GameContext& ctx, GameObject& entity);
 	void Update(GameContext& ctx, GameObject& entity);
 
 public:

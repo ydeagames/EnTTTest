@@ -7,6 +7,12 @@ public:
 	entt::entity entity;
 
 public:
+	template<typename Component>
+	bool HasComponent()
+	{
+		return registry->has<Component>(entity);
+	}
+
 	template<typename Component, typename... Args>
 	Component AddComponent(Args&&... args)
 	{

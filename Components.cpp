@@ -20,9 +20,14 @@ void PrimitiveRenderer::RenderFinalize(GameContext& ctx, GameObject& entity)
 	m_model.reset();
 }
 
+void MoveUpdater::Start(GameContext& ctx, GameObject& entity)
+{
+	vel += DirectX::SimpleMath::Vector3::Right * .1f;
+}
+
 void MoveUpdater::Update(GameContext& ctx, GameObject& entity)
 {
-	entity.GetComponent<Transform>().position.x += .1f;
+	entity.GetComponent<Transform>().position += vel;
 }
 
 void MoveDownUpdater::Update(GameContext& ctx, GameObject& entity)

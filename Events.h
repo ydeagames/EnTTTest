@@ -3,16 +3,32 @@
 
 class Updatable
 {
-public:
-	template<typename T> static void Register(...) {}
+private:
+	template<typename T> static void RegisterStart(...) {}
+	template<typename T, typename = decltype(&T::Start)>
+	static void RegisterStart()
+	{
+		ECS::EventBus<Updatable>::RegisterFirst<T>(&T::Start);
+	}
+
+	template<typename T> static void RegisterUpdate(...) {}
 	template<typename T, typename = decltype(&T::Update)>
-	static void Register()
+	static void RegisterUpdate()
 	{
 		ECS::EventBus<Updatable>::Register<T>(&T::Update);
 	}
 
+public:
+	template<typename T>
+	static void Register()
+	{
+		RegisterStart<T>();
+		RegisterUpdate<T>();
+	}
+
 	static void Update(GameContext& ctx, Scene& registry)
 	{
+		ECS::EventBus<Updatable>::Post(ctx, registry);
 		ECS::EventBus<Updatable>::Post(ctx, registry);
 	}
 };
