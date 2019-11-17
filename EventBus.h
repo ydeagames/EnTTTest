@@ -6,13 +6,13 @@ class GameContext;
 
 namespace ECS
 {
-	template<typename T>
-	struct started_t {};
-
 	template<typename Events, uint64_t... meta>
 	class EventBus
 	{
 	private:
+		template<typename T>
+		struct started_t {};
+
 		using Func = void(GameContext& ctx, Scene& registry);
 		static std::vector<std::function<Func>>& handlers()
 		{
@@ -32,25 +32,38 @@ namespace ECS
 			return 0;
 		}
 
-		template<typename T, typename F>
-		static int RegisterOnce(F f)
+		template<typename T, typename... F>
+		static int RegisterOnce(F&& ... f)
 		{
-			RegisterCustomOnce<T>([f](auto& ctx, auto& o, T& comp) {
-					(comp.*f)(ctx, o);
-				});
+			RegisterCustomOnce<T>([f...](auto& ctx, auto& o, T& comp) {
+				using accumulator_type = int[];
+				accumulator_type accumulator = { 0, ((comp.*f)(ctx, o), 0)... };
+				(void)accumulator;
+			});
 			return 0;
 		}
 
-		template<typename T, typename F>
-		static int RegisterFirstOnce(F f)
+		template<typename T, typename... F>
+		static int RegisterFirstOnce(F&& ... f)
 		{
-			RegisterCustomOnce<T>([f](auto& ctx, auto& o, T& comp) {
-				if (!o.HasComponent<started_t<T>>())
+			RegisterCustomOnce<T>([f...](auto& ctx, auto& o, T& comp) {
+				if (!o.registry->has<started_t<T>>(o.entity))
 				{
-					o.AddComponent<started_t<T>>();
-					(comp.*f)(ctx, o);
+					struct Listener
+					{
+						void on(entt::registry& registry, entt::entity entity)
+						{
+							registry.remove<started_t<T>>(entity);
+						}
+					} listener;
+					entt::registry& registry = *o.registry;
+					registry.destruction<T>().connect<Listener, & Listener::on>(&listener);
+					registry.assign<started_t<T>>(o.entity);
+					using accumulator_type = int[];
+					accumulator_type accumulator = { 0, ((comp.*f)(ctx, o), 0)... };
+					(void)accumulator;
 				}
-				});
+			});
 			return 0;
 		}
 

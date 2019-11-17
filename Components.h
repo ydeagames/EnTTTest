@@ -88,9 +88,8 @@ public:
 	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
 
 public:
-	void RenderInitialize(GameContext& ctx, GameObject& entity);
+	void RenderStart(GameContext& ctx, GameObject& entity);
 	void Render(GameContext& ctx, GameObject& entity);
-	void RenderFinalize(GameContext& ctx, GameObject& entity);
 
 public:
 	template<class Archive>

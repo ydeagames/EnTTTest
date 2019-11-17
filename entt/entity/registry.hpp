@@ -897,6 +897,118 @@ public:
         return std::tuple<Component &...>{get<Component>(entity)...};
     }
 
+    // Additional
+    /**
+     * @brief Returns a reference to the given tag.
+     *
+     * In case the tag not exists, the parameters provided are
+     * used to construct it.<br/>
+     * Equivalent to the following snippet (pseudocode):
+     *
+     * @code{.cpp}
+     * auto &component = registry.has<Tag>() ? registry.get<Tag>() : registry.assign<Tag>(tag_t{}, entity, args...);
+     * @endcode
+     *
+     * @warning
+     * Attempting to use an invalid entity results in undefined behavior.<br/>
+     * An assertion will abort the execution at runtime in debug mode in case of
+     * invalid entity.
+     *
+     * @tparam Tag Type of tag to get.
+     * @tparam Args Types of arguments to use to construct the tag.
+     * @param entity A valid entity identifier.
+     * @param args Parameters to use to initialize the tag.
+     * @return Reference to the tag.
+     */
+    template<typename Tag, typename... Args>
+    Tag& get_or_assign(tag_t, const entity_type entity, Args&& ... args) {
+        assert(valid(entity));
+        return has<Tag>() ? get<Tag>() : assign<Tag, Args>(tag_t{}, entity, std::forward<Args>(args)...);
+    }
+
+    /**
+     * @brief Returns a reference to the given component for an entity.
+     *
+     * In case the entity doesn't own the component, the parameters provided are
+     * used to construct it.<br/>
+     * Equivalent to the following snippet (pseudocode):
+     *
+     * @code{.cpp}
+     * auto &component = registry.has<Component>(entity) ? registry.get<Component>(entity) : registry.assign<Component>(entity, args...);
+     * @endcode
+     *
+     * @warning
+     * Attempting to use an invalid entity results in undefined behavior.<br/>
+     * An assertion will abort the execution at runtime in debug mode in case of
+     * invalid entity.
+     *
+     * @tparam Component Type of component to get.
+     * @tparam Args Types of arguments to use to construct the component.
+     * @param entity A valid entity identifier.
+     * @param args Parameters to use to initialize the component.
+     * @return Reference to the component owned by the entity.
+     */
+    template<typename Component, typename... Args>
+    Component& get_or_assign(const entity_type entity, Args&& ... args) {
+        assert(valid(entity));
+        return has<Component>(entity) ? get<Component>(entity) : assign<Component, Args>(entity, std::forward<Args>(args)...);
+    }
+
+    /**
+     * @brief Assigns or replaces the given tag.
+     *
+     * Equivalent to the following snippet (pseudocode):
+     *
+     * @code{.cpp}
+     * auto &component = registry.has<Tag>() ? registry.replace<Tag>(tag_t{}, entity, args...) : registry.assign<Tag>(tag_t{}, entity, args...);
+     * @endcode
+     *
+     * @warning
+     * Attempting to use an invalid entity results in undefined behavior.<br/>
+     * An assertion will abort the execution at runtime in debug mode in case of
+     * invalid entity.
+     *
+     * @tparam Tag Type of tag to assign or replace.
+     * @tparam Args Types of arguments to use to construct the component.
+     * @param entity A valid entity identifier.
+     * @param args Parameters to use to initialize the tag.
+     * @return A reference to the newly created tag.
+     */
+    template<typename Tag, typename... Args>
+    Tag& assign_or_replace(tag_t, const entity_type entity, Args&& ... args) {
+        assert(valid(entity));
+        return has<Tag>() ? replace<Tag, Args>(tag_t{}, std::forward<Args>(args)...) : assign<Tag, Args>(tag_t{}, std::forward<Args>(args)...);
+    }
+
+    /**
+     * @brief Assigns or replaces the given component for an entity.
+     *
+     * Equivalent to the following snippet (pseudocode):
+     *
+     * @code{.cpp}
+     * auto &component = registry.has<Component>(entity) ? registry.replace<Component>(entity, args...) : registry.assign<Component>(entity, args...);
+     * @endcode
+     *
+     * Prefer this function anyway because it has slightly better performance.
+     *
+     * @warning
+     * Attempting to use an invalid entity results in undefined behavior.<br/>
+     * An assertion will abort the execution at runtime in debug mode in case of
+     * invalid entity.
+     *
+     * @tparam Component Type of component to assign or replace.
+     * @tparam Args Types of arguments to use to construct the component.
+     * @param entity A valid entity identifier.
+     * @param args Parameters to use to initialize the component.
+     * @return A reference to the newly created component.
+     */
+    template<typename Component, typename... Args>
+    Component& assign_or_replace(const entity_type entity, Args&& ... args) {
+        assert(valid(entity));
+        return has<Component>(entity) ? replace<Component, Args>(entity, std::forward<Args>(args)...) : assign<Component, Args>(entity, std::forward<Args>(args)...);
+    }
+    // End Additional
+
     /**
      * @brief Replaces the given tag.
      *

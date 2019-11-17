@@ -4,7 +4,7 @@
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
-void PrimitiveRenderer::RenderInitialize(GameContext& ctx, GameObject& entity)
+void PrimitiveRenderer::RenderStart(GameContext& ctx, GameObject& entity)
 {
 	m_model = GeometricPrimitive::CreateTeapot(ctx.dr->GetD3DDeviceContext());
 }
@@ -13,11 +13,6 @@ void PrimitiveRenderer::Render(GameContext& ctx, GameObject& entity)
 {
 	if (m_model)
 		m_model->Draw(entity.GetComponent<Transform>().GetMatrix(), ctx.view, ctx.projection);
-}
-
-void PrimitiveRenderer::RenderFinalize(GameContext& ctx, GameObject& entity)
-{
-	m_model.reset();
 }
 
 void MoveUpdater::Start(GameContext& ctx, GameObject& entity)

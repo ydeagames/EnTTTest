@@ -4,16 +4,16 @@
 class Updatable
 {
 private:
-	template<typename T> static void RegisterStart(...) {}
+	template<typename T> static void RegisterFirst(...) {}
 	template<typename T, typename = decltype(&T::Start)>
-	static void RegisterStart()
+	static void RegisterFirst()
 	{
-		ECS::EventBus<Updatable>::RegisterFirst<T>(&T::Start);
+		ECS::EventBus<Updatable, 0>::RegisterFirst<T>(&T::Start);
 	}
 
-	template<typename T> static void RegisterUpdate(...) {}
+	template<typename T> static void RegisterTick(...) {}
 	template<typename T, typename = decltype(&T::Update)>
-	static void RegisterUpdate()
+	static void RegisterTick()
 	{
 		ECS::EventBus<Updatable>::Register<T>(&T::Update);
 	}
@@ -22,41 +22,55 @@ public:
 	template<typename T>
 	static void Register()
 	{
-		RegisterStart<T>();
-		RegisterUpdate<T>();
+		RegisterFirst<T>();
+		RegisterTick<T>();
 	}
 
 	static void Update(GameContext& ctx, Scene& registry)
 	{
-		ECS::EventBus<Updatable>::Post(ctx, registry);
+		ECS::EventBus<Updatable, 0>::Post(ctx, registry);
 		ECS::EventBus<Updatable>::Post(ctx, registry);
 	}
 };
 
 class Renderable
 {
+private:
+	template<typename T> static void RegisterFirst(...) {}
+	template<typename T, typename = decltype(&T::RenderStart)>
+	static void RegisterFirst()
+	{
+		ECS::EventBus<Renderable, 0>::RegisterFirst<T>(&T::RenderStart);
+	}
+
+	template<typename T> static void RegisterTick(...) {}
+	template<typename T, typename = decltype(&T::Render)>
+	static void RegisterTick()
+	{
+		ECS::EventBus<Renderable>::Register<T>(&T::Render);
+	}
+
 public:
-	template<typename T> static void Register(...) {}
-	template<typename T, typename = decltype(&T::RenderInitialize), typename = decltype(&T::Render), typename = decltype(&T::RenderFinalize)>
+	template<typename T>
 	static void Register()
 	{
-		ECS::EventBus<Renderable, 0>::Register<T>(&T::RenderInitialize);
-		ECS::EventBus<Renderable>::Register<T>(&T::Render);
-		ECS::EventBus<Renderable, 1>::Register<T>(&T::RenderFinalize);
+		RegisterFirst<T>();
+		RegisterTick<T>();
 	}
 
 	static void RenderInitialize(GameContext& ctx, Scene& registry)
 	{
-		ECS::EventBus<Renderable, 0>::Post(ctx, registry);
+		//ECS::EventBus<Renderable, 0>::Post(ctx, registry);
 	}
 
 	static void Render(GameContext& ctx, Scene& registry)
 	{
+		ECS::EventBus<Renderable, 0>::Post(ctx, registry);
 		ECS::EventBus<Renderable>::Post(ctx, registry);
 	}
 
 	static void RenderFinalize(GameContext& ctx, Scene& registry)
 	{
-		ECS::EventBus<Renderable, 1>::Post(ctx, registry);
+		//ECS::EventBus<Renderable, 1>::Post(ctx, registry);
 	}
 };
