@@ -188,8 +188,10 @@ void Game::CreateWindowSizeDependentResources()
 		DirectX::SimpleMath::Vector3::Up
 		);
 
+	RECT rect = m_deviceResources->GetOutputSize();
+	auto size = DirectX::SimpleMath::Vector2(float(rect.right), float(rect.bottom));
 	// ウインドウサイズからアスペクト比を算出する
-	float aspectRatio = 800.f/600.f;
+	float aspectRatio = size.x/size.y;
 	// 画角を設定
 	float fovAngleY = XMConvertToRadians(70.0f);
 	// 射影行列を作成する

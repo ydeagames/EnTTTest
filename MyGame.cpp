@@ -5,6 +5,11 @@
 #include "AllComponents.h"
 #include "ImGuiManager.h"
 
+struct EntityEditorState
+{
+	entt::entity current;
+};
+
 MyGame::MyGame(GameContext* context)
 	: m_context(context)
 {
@@ -51,6 +56,8 @@ MyGame::MyGame(GameContext* context)
 	// "registerTrivial" registers the type, name, create and destroy functions for trivialy costructable(and destroyable) types.
 	// you just need to provide a "widget" function if you use this method.
 	Components::InitializeEditorComponents(*m_context, reg, editor);
+
+	m_context->Register<EntityEditorState>();
 }
 
 void MyGame::Update()
@@ -78,8 +85,43 @@ void MyGame::Render()
 	// render editor
 	auto& reg = m_scene.registry;
 	auto& editor = m_context->Get<MM::ImGuiEntityEditor<entt::registry>>();
-	entt::entity e = 1;
-	editor.renderImGui(reg, e);
+	auto& editorState = m_context->Get<EntityEditorState>();
+	editor.renderImGui(reg, editorState.current);
+
+	if (ImGui::Begin("Hierarchy"))
+	{
+		struct Node
+		{
+			entt::entity id;
+			std::string name;
+		};
+
+		int current = 0;
+		std::vector<Node> nodes;
+		reg.each([&](auto entity) {
+			Node node{ entity };
+			if (entity == editorState.current)
+				current = int(nodes.size());
+			if (reg.has<Transform>())
+			{
+				auto& transform = reg.get<Transform>();
+				node.name = transform.name;
+			}
+			else
+			{
+				node.name = "ID " + std::to_string(reg.entity(entity));
+			}
+			nodes.emplace_back(std::move(node));
+			});
+
+		std::vector<const char*> items;
+		for (auto& node : nodes)
+			items.push_back(node.name.c_str());
+
+		ImGui::ListBox("Hierarchy", &current, items.data(), items.size());
+		editorState.current = nodes[current].id;
+		ImGui::End();
+	}
 
 	// GUI
 	m_context->Get<ImGuiManager>().AfterRender(*m_context);

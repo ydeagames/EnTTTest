@@ -79,6 +79,11 @@ void Transform::EditorGui(GameContext& ctx, GameObject& entity)
 {
 	auto& t = entity.GetComponent<Transform>();
 
+	std::string tmpname = t.name;
+	tmpname.resize(16);
+	ImGui::InputText("Name##Transform", &tmpname[0], tmpname.size());
+	t.name = tmpname;
+
 	if (ImGui::CollapsingHeader("Position"))
 	{
 		// the "##Transform" ensures that you can use the name "x" in multiple lables

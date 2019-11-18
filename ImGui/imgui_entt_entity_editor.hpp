@@ -41,6 +41,12 @@ namespace MM {
 		void renderImGui(Registry& ecs, typename Registry::entity_type& e) {
 			if (show_window) {
 				if (ImGui::Begin("Entity Editor", &show_window)) {
+					entt::entity id = ecs.entity(e);
+					int iid = int(id);
+					ImGui::InputInt("id", &iid);
+					id = ecs.entity(entt::entity(iid));
+					e = id < ecs.size() ? (id | ecs.current(id) << entt::entt_traits<entt::entity>::entity_shift) : id;
+
 					ImGui::TextUnformatted("editing:");
 					ImGui::SameLine();
 
@@ -55,6 +61,10 @@ namespace MM {
 
 					if (ImGui::Button("New Entity")) {
 						e = ecs.create();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Delete Entity")) {
+						ecs.destroy(e);
 					}
 
 					// TODO: implemnt cloning by ether forking entt or implementing function lists...
@@ -71,9 +81,9 @@ namespace MM {
 					ImGui::Separator();
 
 					// TODO: needed?
-					if (!ecs.valid(e)) {
-						e = entt::null;
-					}
+					//if (!ecs.valid(e)) {
+					//	e = entt::null;
+					//}
 
 					if (e != entt::null) {
 						std::vector<component_type> has_not;

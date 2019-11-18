@@ -26,6 +26,10 @@ public:
 	static constexpr const char* Identifier = "Transform";
 
 public:
+	std::string name;
+	entt::entity parent = entt::null;
+
+public:
 	DirectX::SimpleMath::Vector3 position;
 	DirectX::SimpleMath::Quaternion rotation;
 	DirectX::SimpleMath::Vector3 scale = { 1, 1, 1 };
