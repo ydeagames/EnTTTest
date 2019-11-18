@@ -77,44 +77,35 @@ namespace
 
 void Transform::EditorGui(GameContext& ctx, GameObject& entity)
 {
-	auto& t = entity.GetComponent<Transform>();
+	auto& t = *this;
 
 	std::string tmpname = t.name;
 	tmpname.resize(16);
 	ImGui::InputText("Name##Transform", &tmpname[0], tmpname.size());
-	t.name = tmpname;
+	t.name = std::string(tmpname.c_str());
 
-	if (ImGui::CollapsingHeader("Position"))
-	{
-		// the "##Transform" ensures that you can use the name "x" in multiple lables
-		ImGui::DragFloat("x##Transform.Position", &t.position.x, 0.1f);
-		ImGui::DragFloat("y##Transform.Position", &t.position.y, 0.1f);
-		ImGui::DragFloat("z##Transform.Position", &t.position.z, 0.1f);
-	}
-	if (ImGui::CollapsingHeader("Rotation"))
+	int iparent = int(t.parent);
+	ImGui::InputInt("Parent##Transform", &iparent);
+	t.parent = entt::entity(iparent);
+
+	// the "##Transform" ensures that you can use the name "x" in multiple lables
+	ImGui::DragFloat3("Position##Transform", &t.position.x, 0.1f);
+
 	{
 		auto euler = ToEulerAngles(DirectX::SimpleMath::Quaternion(t.rotation.x, t.rotation.y, t.rotation.z, t.rotation.w)) * (180.f / DirectX::XM_PI);
 
-		float x = euler.x;
-		float y = euler.y;
-		float z = euler.z;
+		float rot[] = {euler.x, euler.y, euler.z};
 
 		// the "##Transform" ensures that you can use the name "x" in multiple lables
-		ImGui::DragFloat("x##Transform.Rotation", &x, 0.1f);
-		ImGui::DragFloat("y##Transform.Rotation", &y, 0.1f);
-		ImGui::DragFloat("z##Transform.Rotation", &z, 0.1f);
+		ImGui::DragFloat3("Rotation##Transform", &rot[0], 0.1f);
 
-		auto quat = ToQuaternion(DirectX::SimpleMath::Vector3(x, y, z) * (DirectX::XM_PI / 180.f));
+		auto quat = ToQuaternion(DirectX::SimpleMath::Vector3(rot[0], rot[1], rot[2]) * (DirectX::XM_PI / 180.f));
 		t.rotation.x = quat.x;
 		t.rotation.y = quat.y;
 		t.rotation.z = quat.z;
 		t.rotation.w = quat.w;
 	}
-	if (ImGui::CollapsingHeader("Scale"))
-	{
-		// the "##Transform" ensures that you can use the name "x" in multiple lables
-		ImGui::DragFloat("x##Transform.Scale", &t.scale.x, 0.1f);
-		ImGui::DragFloat("y##Transform.Scale", &t.scale.y, 0.1f);
-		ImGui::DragFloat("z##Transform.Scale", &t.scale.z, 0.1f);
-	}
+
+	// the "##Transform" ensures that you can use the name "x" in multiple lables
+	ImGui::DragFloat3("Scale##Transform", &t.scale.x, 0.1f);
 }

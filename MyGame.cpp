@@ -16,8 +16,11 @@ MyGame::MyGame(GameContext* context)
 	Components::InitializeEvents();
 	Components::InitializeDependency(m_scene.registry);
 
+	m_scene.name = "scene";
+	m_scene.location = m_scene.name + ".json";
+
 	auto obj1 = m_scene.Create();
-	//if (m_scene.Load("scene.json"))
+	//if (m_scene.Load())
 	//{
 	//}
 	//else
@@ -48,7 +51,7 @@ MyGame::MyGame(GameContext* context)
 		//	obj.AddComponent<MoveDownUpdater>(MoveDownUpdater());
 		//}
 
-		m_scene.Save("scene.json");
+		m_scene.Save();
 	}
 
 	auto& reg = m_scene.registry;
@@ -90,36 +93,106 @@ void MyGame::Render()
 
 	if (ImGui::Begin("Hierarchy"))
 	{
-		struct Node
+		auto& e = editorState.current;
+		entt::entity id = reg.entity(e);
+		int iid = int(id);
+		ImGui::InputInt("id", &iid);
+		id = reg.entity(entt::entity(iid));
+		e = id < reg.size() ? (id | reg.current(id) << entt::entt_traits<entt::entity>::entity_shift) : id;
+
+		if (ImGui::Button("New Entity")) {
+			auto prev = e;
+			auto e0 = reg.create();
+			Transform t;
+			if (reg.valid(prev))
+				t.parent = prev;
+			reg.assign<Transform>(e0, std::move(t));
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Delete Entity")) {
+			reg.destroy(e);
+		}
+
+		ImGui::Separator();
+
+		class Node
 		{
+		public:
 			entt::entity id;
 			std::string name;
+			entt::entity parent = entt::null;
+			std::vector<entt::entity> children;
+
+		public:
+			Node(const entt::entity& id)
+				: id(id)
+			{}
 		};
 
-		int current = 0;
-		std::vector<Node> nodes;
+		entt::SparseSet<entt::entity, Node> nodes;
 		reg.each([&](auto entity) {
 			Node node{ entity };
-			if (entity == editorState.current)
-				current = int(nodes.size());
-			if (reg.has<Transform>())
+
+			std::stringstream sb;
+			sb << "[" << reg.entity(entity) << "]";
+			if (reg.has<Transform>(entity))
 			{
-				auto& transform = reg.get<Transform>();
-				node.name = transform.name;
+				auto& transform = reg.get<Transform>(entity);
+				node.parent = transform.parent;
+				sb << " " << transform.name;
 			}
-			else
-			{
-				node.name = "ID " + std::to_string(reg.entity(entity));
-			}
-			nodes.emplace_back(std::move(node));
+			node.name = sb.str();
+			nodes.construct(entity, std::move(node));
 			});
 
-		std::vector<const char*> items;
 		for (auto& node : nodes)
-			items.push_back(node.name.c_str());
+		{
+			if (reg.valid(node.parent) && nodes.has(node.parent))
+				nodes.get(node.parent).children.push_back(node.id);
+		}
 
-		ImGui::ListBox("Hierarchy", &current, items.data(), items.size());
-		editorState.current = nodes[current].id;
+		std::string title = "Scene [" + m_scene.name + "]";
+		if (ImGui::CollapsingHeader(title.c_str()))
+		{
+			std::stack<entt::entity> stack;
+			for (auto& node : nodes)
+			{
+				bool hasparent = reg.valid(node.parent) && nodes.has(node.parent);
+				if (!hasparent)
+				{
+					auto rec0 = [&](Node& node, auto& rec) mutable -> void {
+						ImGui::Indent(-5.f);
+						if (node.children.empty())
+						{
+							ImGui::Indent(20.f);
+							ImGui::Text(node.name.c_str());
+							ImGui::Unindent(20.f);
+						}
+						else
+						{
+							if (ImGui::TreeNode(node.name.c_str()))
+							{
+								for (auto& nodeindex : node.children)
+								{
+									rec(nodes.get(nodeindex), rec);
+								}
+								ImGui::TreePop();
+							}
+						}
+						ImGui::Unindent(-5.f);
+					};
+					rec0(node, rec0);
+				}
+			}
+		}
+
+		//std::vector<const char*> items;
+		//for (auto& node : nodes)
+		//	items.push_back(node.name.c_str());
+
+		//int current = int(nodeindex.get(editorState.current));
+		//ImGui::ListBox("Hierarchy", &current, items.data(), items.size());
+		//editorState.current = nodes[current].id;
 		ImGui::End();
 	}
 

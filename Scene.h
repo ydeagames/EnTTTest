@@ -5,12 +5,14 @@ class GameObject;
 class Scene final
 {
 public:
+	std::string name;
+	std::string location;
 	entt::registry registry;
 
 public:
 	GameObject Create();
 
-	bool Load(const std::string& location);
-	bool Save(const std::string& location) const;
+	bool Load();
+	bool Save() const;
 };
 

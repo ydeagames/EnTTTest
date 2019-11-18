@@ -9,12 +9,12 @@ GameObject Scene::Create()
 	return GameObject{ &registry, registry.create() };
 }
 
-bool Scene::Load(const std::string& location)
+bool Scene::Load()
 {
 	return Components::LoadScene(location, registry);
 }
 
-bool Scene::Save(const std::string& location) const
+bool Scene::Save() const
 {
 	return Components::SaveScene(location, registry);
 }
