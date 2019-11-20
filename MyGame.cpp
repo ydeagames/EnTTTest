@@ -142,6 +142,8 @@ void MyGame::Render()
 			entt::entity id;
 			std::string name;
 			entt::entity parent = entt::null;
+			bool hasloop = false;
+			bool hasparent = false;
 			Transform* transform = nullptr;
 			std::vector<entt::entity> children;
 
@@ -151,6 +153,7 @@ void MyGame::Render()
 			{}
 		};
 
+		//std::unordered_set<entt::entity> checknodes;
 		entt::SparseSet<entt::entity, Node> nodes;
 		reg.each([&](auto entity) {
 			Node node{ entity };
@@ -170,7 +173,29 @@ void MyGame::Render()
 
 		for (auto& node : nodes)
 		{
-			if (reg.valid(node.parent) && nodes.has(node.parent))
+			auto loop = [&nodes](entt::entity id) {
+				auto slow = id, fast = id;
+				while (true)
+				{
+					//if (!nodes.has(slow))
+					//	return false;
+					slow = nodes.get(slow).parent;
+					//if (!nodes.has(fast))
+					//	return false;
+					fast = nodes.get(fast).parent;
+					if (!nodes.has(fast))
+						return false;
+					fast = nodes.get(fast).parent;
+					if (!nodes.has(slow) || !nodes.has(fast))
+						return false;
+					if (slow == fast)
+						return true;
+				}
+			};
+			node.hasparent = reg.valid(node.parent) && nodes.has(node.parent);
+			if (node.id == node.parent || loop(node.id))
+				node.hasloop = true;
+			else if (reg.valid(node.parent) && nodes.has(node.parent))
 				nodes.get(node.parent).children.push_back(node.id);
 		}
 
@@ -181,14 +206,25 @@ void MyGame::Render()
 			| ImGuiTreeNodeFlags_OpenOnDoubleClick
 			| ImGuiTreeNodeFlags_DefaultOpen;
 		bool opened = ImGui::TreeNodeEx(title.c_str(), node_flags, title.c_str());
+
 		if (ImGui::IsItemClicked())
 			e = entt::null;
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("DND_Hierarchy"))
+			{
+				auto data = *(static_cast<const entt::entity*>(payload->Data));
+				reg.get<Transform>(data).parent = entt::null;
+			}
+			ImGui::EndDragDropTarget();
+		}
+
 		if (opened)
 		{
-			std::stack<entt::entity> stack;
 			for (auto& node : nodes)
 			{
-				if (node.parent == node.id || !(reg.valid(node.parent) && nodes.has(node.parent)))
+				if (node.hasloop || !node.hasparent)
 				{
 					auto rec0 = [&](Node& node, auto& rec) mutable -> void {
 						ImGui::Indent(-5.f);
@@ -205,7 +241,6 @@ void MyGame::Render()
 							ImGui::PushID(node.name.c_str());
 							if (ImGui::BeginPopupContextItem())
 							{
-								// Some processing...
 								ImGui::EndPopup();
 							}
 							ImGui::PopID();
@@ -213,7 +248,6 @@ void MyGame::Render()
 							if (ImGui::IsItemClicked())
 							{
 								e = node.id;
-								// Some processing...
 							}
 
 							if (ImGui::BeginDragDropSource())
@@ -229,12 +263,12 @@ void MyGame::Render()
 								{
 									auto data = *(static_cast<const entt::entity*>(payload->Data));
 									if (data != node.id && data != node.parent)
-										node.transform->parent = data;
+										reg.get<Transform>(data).parent = node.id;
 								}
 								ImGui::EndDragDropTarget();
 							}
 
-							if (node.parent != entt::null && (node.parent == node.id || !(reg.valid(node.parent) && nodes.has(node.parent))))
+							if (node.parent != entt::null && (node.hasloop || !node.hasparent))
 							{
 								if (node.transform)
 								{
@@ -246,7 +280,7 @@ void MyGame::Render()
 
 							if (opened)
 							{
-								if (node.parent != node.id)
+								if (!node.hasloop)
 									for (auto& nodeindex : node.children)
 									{
 										rec(nodes.get(nodeindex), rec);
