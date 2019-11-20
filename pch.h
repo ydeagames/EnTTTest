@@ -70,6 +70,8 @@
 #include <queue>
 #include <deque>
 
+#include <chrono>
+
 // DirectXTK
 #include <Keyboard.h>
 #include <Mouse.h>

@@ -28,6 +28,7 @@ public:
 public:
 	std::string name;
 	entt::entity parent = entt::null;
+	bool isStatic = false;
 
 public:
 	DirectX::SimpleMath::Vector3 position;

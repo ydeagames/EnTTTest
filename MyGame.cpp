@@ -5,6 +5,30 @@
 #include "AllComponents.h"
 #include "ImGuiManager.h"
 
+int MyGame::Bench()
+{
+	/*
+	std::cout << "Performance Test" << std::endl;
+	//DirectX::SimpleMath::Matrix m1 = DirectX::SimpleMath::Matrix::CreateRotationX(.5f);
+	//DirectX::SimpleMath::Matrix m2 = DirectX::SimpleMath::Matrix::CreateRotationY(.5f);
+	Renderable::RenderInitialize(*m_context, m_scene);
+	Renderable::Render(*m_context, m_scene);
+	auto t1 = std::chrono::high_resolution_clock::now();
+	constexpr long count = 100'000L;
+	for (long i = 0; i < count; i++)
+	{
+		//reg.get<Transform>(0);
+		//m1* m2;
+		Renderable::Render(*m_context, m_scene);
+		//Updatable::Update(*m_context, m_scene);
+	}
+	auto t2 = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+	std::cout << "Finish in " << duration / 1'000'000.f << " (" << duration / (float)count << "ƒÊs)" << std::endl;
+	*/
+	return 0;
+}
+
 struct EntityEditorState
 {
 	entt::entity current;
@@ -19,6 +43,9 @@ MyGame::MyGame(GameContext* context)
 	m_scene.name = "scene";
 	m_scene.location = m_scene.name + ".json";
 
+	m_scene.Load();
+
+	/*
 	auto obj1 = m_scene.Create();
 	//if (m_scene.Load())
 	//{
@@ -53,6 +80,7 @@ MyGame::MyGame(GameContext* context)
 
 		m_scene.Save();
 	}
+	*/
 
 	auto& reg = m_scene.registry;
 	auto& editor = m_context->Register<MM::ImGuiEntityEditor<entt::registry>>();
@@ -78,6 +106,8 @@ void MyGame::RenderInitialize()
 
 void MyGame::Render()
 {
+	static int bench = Bench();
+
 	// GUI
 	m_context->Get<ImGuiManager>().BeforeRender(*m_context);
 
@@ -297,62 +327,6 @@ void MyGame::Render()
 		}
 
 		ImGui::End();
-
-		{
-			ImGui::Begin("Drag Test");
-			// Reordering is actually a rather odd use case for the drag and drop API which is meant to carry data around. 
-			// Here we implement a little demo using the drag and drop primitives, but we could perfectly achieve the same results by using a mixture of
-			//  IsItemActive() on the source item + IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) on target items.
-			// This demo however serves as a pretext to demonstrate some of the flags you can use with BeginDragDropSource() and AcceptDragDropPayload().
-			ImGui::BulletText("Drag and drop to re-order");
-			ImGui::Indent();
-			static const char* names[6] = { "1. Adbul", "2. Alfonso", "3. Aline", "4. Amelie", "5. Anna", "6. Arthur" };
-			int move_from = -1, move_to = -1;
-			for (int n = 0; n < IM_ARRAYSIZE(names); n++)
-			{
-				ImGui::Selectable(names[n]);
-
-				ImGuiDragDropFlags src_flags = 0;
-				src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;     // Keep the source displayed as hovered
-				src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers; // Because our dragging is local, we disable the feature of opening foreign treenodes/tabs while dragging
-				//src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip; // Hide the tooltip
-				if (ImGui::BeginDragDropSource(src_flags))
-				{
-					if (!(src_flags & ImGuiDragDropFlags_SourceNoPreviewTooltip))
-						ImGui::Text("Moving \"%s\"", names[n]);
-					ImGui::SetDragDropPayload("DND_DEMO_NAME", &n, sizeof(int));
-					ImGui::EndDragDropSource();
-				}
-
-				if (ImGui::BeginDragDropTarget())
-				{
-					ImGuiDragDropFlags target_flags = 0;
-					target_flags |= ImGuiDragDropFlags_AcceptBeforeDelivery;    // Don't wait until the delivery (release mouse button on a target) to do something
-					target_flags |= ImGuiDragDropFlags_AcceptNoDrawDefaultRect; // Don't display the yellow rectangle
-					if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("DND_DEMO_NAME", target_flags))
-					{
-						move_from = *(const int*)payload->Data;
-						move_to = n;
-					}
-					ImGui::EndDragDropTarget();
-				}
-			}
-
-			if (move_from != -1 && move_to != -1)
-			{
-				// Reorder items
-				int copy_dst = (move_from < move_to) ? move_from : move_to + 1;
-				int copy_src = (move_from < move_to) ? move_from + 1 : move_to;
-				int copy_count = (move_from < move_to) ? move_to - move_from : move_from - move_to;
-				const char* tmp = names[move_from];
-				//printf("[%05d] move %d->%d (copy %d..%d to %d..%d)\n", ImGui::GetFrameCount(), move_from, move_to, copy_src, copy_src + copy_count - 1, copy_dst, copy_dst + copy_count - 1);
-				memmove(&names[copy_dst], &names[copy_src], (size_t)copy_count * sizeof(const char*));
-				names[move_to] = tmp;
-				ImGui::SetDragDropPayload("DND_DEMO_NAME", &move_to, sizeof(int)); // Update payload immediately so on the next frame if we move the mouse to an earlier item our index payload will be correct. This is odd and showcase how the DnD api isn't best presented in this example.
-			}
-			ImGui::Unindent();
-			ImGui::End();
-		}
 	}
 
 	// GUI

@@ -14,4 +14,6 @@ public:
 	void Render();
 	void RenderFinalize();
 	~MyGame();
+
+	int Bench();
 };
