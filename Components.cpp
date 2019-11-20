@@ -78,15 +78,25 @@ namespace
 void Transform::EditorGui(GameContext& ctx, GameObject& entity)
 {
 	auto& t = *this;
+	auto& reg = *entity.registry;
 
 	std::string tmpname = t.name;
 	tmpname.resize(16);
 	ImGui::InputText("Name##Transform", &tmpname[0], tmpname.size());
 	t.name = std::string(tmpname.c_str());
 
-	int iparent = int(t.parent);
-	ImGui::InputInt("Parent##Transform", &iparent);
-	t.parent = entt::entity(iparent);
+	{
+		auto& e = t.parent;
+		int iid = (e == entt::null) ? -1 : int(reg.entity(e));
+		ImGui::InputInt("Parent##Transform", &iid);
+		if (iid < 0)
+			e = entt::null;
+		else
+		{
+			auto id = entt::entity(iid);
+			e = id < reg.size() ? (id | reg.current(id) << entt::entt_traits<entt::entity>::entity_shift) : id;
+		}
+	}
 
 	// the "##Transform" ensures that you can use the name "x" in multiple lables
 	ImGui::DragFloat3("Position##Transform", &t.position.x, 0.1f);
@@ -94,7 +104,7 @@ void Transform::EditorGui(GameContext& ctx, GameObject& entity)
 	{
 		auto euler = ToEulerAngles(DirectX::SimpleMath::Quaternion(t.rotation.x, t.rotation.y, t.rotation.z, t.rotation.w)) * (180.f / DirectX::XM_PI);
 
-		float rot[] = {euler.x, euler.y, euler.z};
+		float rot[] = { euler.x, euler.y, euler.z };
 
 		// the "##Transform" ensures that you can use the name "x" in multiple lables
 		ImGui::DragFloat3("Rotation##Transform", &rot[0], 0.1f);

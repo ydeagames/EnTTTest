@@ -72,7 +72,7 @@ namespace MM {
 					//}
 
 					//if (e != entt::null) {
-					if (e != entt::null || !ecs.valid(e)) {
+					if (e != entt::null && ecs.valid(e)) {
 						std::vector<component_type> has_not;
 						for (auto ct : _component_types) {
 							if (entity_has_component(ecs, e, ct)) {

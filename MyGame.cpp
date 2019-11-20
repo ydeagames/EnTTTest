@@ -94,11 +94,17 @@ void MyGame::Render()
 	if (ImGui::Begin("Hierarchy"))
 	{
 		auto& e = editorState.current;
-		entt::entity id = reg.entity(e);
-		int iid = int(id);
-		ImGui::InputInt("id", &iid);
-		id = reg.entity(entt::entity(iid));
-		e = id < reg.size() ? (id | reg.current(id) << entt::entt_traits<entt::entity>::entity_shift) : id;
+		{
+			int iid = (e == entt::null) ? -1 : int(reg.entity(e));
+			ImGui::InputInt("ID", &iid);
+			if (iid < 0)
+				e = entt::null;
+			else
+			{
+				auto id = entt::entity(iid);
+				e = id < reg.size() ? (id | reg.current(id) << entt::entt_traits<entt::entity>::entity_shift) : id;
+			}
+		}
 
 		if (ImGui::Button("New Entity")) {
 			auto prev = e;
@@ -107,10 +113,25 @@ void MyGame::Render()
 			if (reg.valid(prev))
 				t.parent = prev;
 			reg.assign<Transform>(e0, std::move(t));
+			e = e0;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Delete Entity")) {
-			reg.destroy(e);
+			auto rec0 = [&](auto& e, auto& rec) mutable -> void {
+				reg.view<Transform>().each([&](auto entity, Transform& component) {
+					if (component.parent == e)
+						rec(entity, rec);
+					});
+				reg.destroy(e);
+			};
+			rec0(e, rec0);
+		}
+		if (ImGui::Button("Save Scene")) {
+			m_scene.Save();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Load Scene")) {
+			m_scene.Load();
 		}
 
 		ImGui::Separator();
@@ -121,6 +142,7 @@ void MyGame::Render()
 			entt::entity id;
 			std::string name;
 			entt::entity parent = entt::null;
+			Transform* transform = nullptr;
 			std::vector<entt::entity> children;
 
 		public:
@@ -138,6 +160,7 @@ void MyGame::Render()
 			if (reg.has<Transform>(entity))
 			{
 				auto& transform = reg.get<Transform>(entity);
+				node.transform = &transform;
 				node.parent = transform.parent;
 				sb << " " << transform.name;
 			}
@@ -152,30 +175,48 @@ void MyGame::Render()
 		}
 
 		std::string title = "Scene [" + m_scene.name + "]";
-		if (ImGui::CollapsingHeader(title.c_str()))
+		ImGuiTreeNodeFlags node_flags = ((e == entt::null) ? ImGuiTreeNodeFlags_Selected : 0)
+			| (nodes.empty() ? ImGuiTreeNodeFlags_Leaf : 0)
+			| ImGuiTreeNodeFlags_OpenOnArrow
+			| ImGuiTreeNodeFlags_OpenOnDoubleClick
+			| ImGuiTreeNodeFlags_DefaultOpen;
+		bool opened = ImGui::TreeNodeEx(title.c_str(), node_flags, title.c_str());
+		if (ImGui::IsItemClicked())
+			e = entt::null;
+		if (opened)
 		{
 			std::stack<entt::entity> stack;
 			for (auto& node : nodes)
 			{
-				bool hasparent = reg.valid(node.parent) && nodes.has(node.parent);
-				if (!hasparent)
+				if (node.parent == node.id || !(reg.valid(node.parent) && nodes.has(node.parent)))
 				{
 					auto rec0 = [&](Node& node, auto& rec) mutable -> void {
 						ImGui::Indent(-5.f);
-						if (node.children.empty())
 						{
-							ImGui::Indent(20.f);
-							ImGui::Text(node.name.c_str());
-							ImGui::Unindent(20.f);
-						}
-						else
-						{
-							if (ImGui::TreeNode(node.name.c_str()))
+							ImGuiTreeNodeFlags node_flags = ((e == node.id) ? ImGuiTreeNodeFlags_Selected : 0)
+								| (node.children.empty() ? ImGuiTreeNodeFlags_Leaf : 0)
+								| ImGuiTreeNodeFlags_OpenOnArrow
+								| ImGuiTreeNodeFlags_OpenOnDoubleClick
+								| ImGuiTreeNodeFlags_DefaultOpen;
+							bool opened = ImGui::TreeNodeEx(node.name.c_str(), node_flags, node.name.c_str());
+							if (ImGui::IsItemClicked())
+								e = node.id;
+							if (node.parent != entt::null && (node.parent == node.id || !(reg.valid(node.parent) && nodes.has(node.parent))))
 							{
-								for (auto& nodeindex : node.children)
+								if (node.transform)
 								{
-									rec(nodes.get(nodeindex), rec);
+									ImGui::SameLine();
+									if (ImGui::SmallButton("Fix Transform"))
+										node.transform->parent = entt::null;
 								}
+							}
+							if (opened)
+							{
+								if (node.parent != node.id)
+									for (auto& nodeindex : node.children)
+									{
+										rec(nodes.get(nodeindex), rec);
+									}
 								ImGui::TreePop();
 							}
 						}
@@ -184,15 +225,9 @@ void MyGame::Render()
 					rec0(node, rec0);
 				}
 			}
+			ImGui::TreePop();
 		}
 
-		//std::vector<const char*> items;
-		//for (auto& node : nodes)
-		//	items.push_back(node.name.c_str());
-
-		//int current = int(nodeindex.get(editorState.current));
-		//ImGui::ListBox("Hierarchy", &current, items.data(), items.size());
-		//editorState.current = nodes[current].id;
 		ImGui::End();
 	}
 
