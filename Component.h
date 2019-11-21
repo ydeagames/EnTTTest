@@ -106,30 +106,6 @@ namespace ECS
 		}
 	};
 
-	template<typename Registry>
-	class ComponentClone
-	{
-	public:
-		template<typename Component>
-		static void Clone(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type dst)
-		{
-			if (reg.has<Component>(src))
-			{
-				std::stringstream buffer;
-				{
-					cereal::BinaryOutputArchive output(buffer);
-					auto& srcComponent = reg.get<Component>(src);
-					output(srcComponent);
-				}
-				{
-					cereal::BinaryInputArchive input(buffer);
-					auto& dstComponent = reg.accommodate<Component>(dst);
-					input(dstComponent);
-				}
-			}
-		}
-	};
-
 	// Declaration of a template
 	template<typename Components, typename Events, typename Tags>
 	class ComponentManager;
@@ -197,7 +173,8 @@ namespace ECS
 			(void)accumulator;
 		}
 
-		static bool LoadScene(const std::string& location, entt::registry& scene)
+		template<typename Registry>
+		static bool LoadScene(const std::string& location, Registry& scene)
 		{
 			std::ifstream storage(location);
 			if (storage)
@@ -205,9 +182,9 @@ namespace ECS
 				try
 				{
 					cereal::JSONInputArchive archive{ storage };
-					ObjectSnapshotLoader<entt::entity> oarchive(archive);
-					ObjectTagSnapshotLoader<entt::entity> tarchive(archive);
-					ObjectComponentSnapshotLoader<entt::entity> carchive(archive);
+					ObjectSnapshotLoader<typename Registry::entity_type> oarchive(archive);
+					ObjectTagSnapshotLoader<typename Registry::entity_type> tarchive(archive);
+					ObjectComponentSnapshotLoader<typename Registry::entity_type> carchive(archive);
 					auto snap = scene.restore();
 					{
 						{
@@ -251,7 +228,8 @@ namespace ECS
 			return false;
 		}
 
-		static bool SaveScene(const std::string& location, const entt::registry& scene)
+		template<typename Registry>
+		static bool SaveScene(const std::string& location, const Registry& scene)
 		{
 			std::ofstream storage(location);
 			if (storage)
@@ -260,9 +238,9 @@ namespace ECS
 				{
 					// output finishes flushing its contents when it goes out of scope
 					cereal::JSONOutputArchive archive{ storage };
-					ObjectSnapshot<entt::entity> oarchive(archive);
-					ObjectTagSnapshot<entt::entity> tarchive(archive);
-					ObjectComponentSnapshot<entt::entity> carchive(archive);
+					ObjectSnapshot<typename Registry::entity_type> oarchive(archive);
+					ObjectTagSnapshot<typename Registry::entity_type> tarchive(archive);
+					ObjectComponentSnapshot<typename Registry::entity_type> carchive(archive);
 					auto snap = scene.snapshot();
 					{
 						{
@@ -296,6 +274,58 @@ namespace ECS
 							carchive.component<Components...>(snap);
 							archive.finishNode();
 						}
+					}
+					return true;
+				}
+				catch (cereal::Exception)
+				{
+					// —áŠO
+				}
+			}
+			return false;
+		}
+
+		template<typename Registry>
+		static bool LoadEntity(const std::string& location, Registry& scene, typename Registry::entity_type entity)
+		{
+			std::ifstream storage(location);
+			if (storage)
+			{
+				try
+				{
+					cereal::JSONInputArchive archive{ storage };
+					EntityImporter<Registry> earchive(archive);
+					{
+						archive.setNextName("components");
+						archive.startNode();
+						earchive.component<Components...>(scene, entity);
+						archive.finishNode();
+					}
+					return true;
+				}
+				catch (cereal::Exception e)
+				{
+					// —áŠO
+				}
+			}
+			return false;
+		}
+
+		template<typename Registry>
+		static bool SaveEntity(const std::string& location, const Registry& scene, typename Registry::entity_type entity)
+		{
+			std::ofstream storage(location);
+			if (storage)
+			{
+				try
+				{
+					cereal::JSONOutputArchive archive{ storage };
+					EntityExporter<Registry> earchive(archive);
+					{
+						archive.setNextName("components");
+						archive.startNode();
+						earchive.component<Components...>(scene, entity);
+						archive.finishNode();
 					}
 					return true;
 				}

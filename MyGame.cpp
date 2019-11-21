@@ -136,7 +136,8 @@ void MyGame::Render()
 			}
 		}
 
-		if (ImGui::Button("New")) {
+		if (ImGui::Button("New"))
+		{
 			auto prev = e;
 			auto e0 = reg.create();
 			Transform t;
@@ -151,7 +152,8 @@ void MyGame::Render()
 				e = e0;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Delete")) {
+		if (ImGui::Button("Delete"))
+		{
 			auto rec0 = [&](auto& e, auto& rec) mutable -> void {
 				reg.view<Transform>().each([&](auto entity, Transform& component) {
 					if (component.parent == e)
@@ -161,7 +163,8 @@ void MyGame::Render()
 			};
 			rec0(e, rec0);
 		}
-		if (ImGui::Button("New Child")) {
+		if (ImGui::Button("New Child"))
+		{
 			auto prev = e;
 			auto e0 = reg.create();
 			Transform t;
@@ -172,7 +175,8 @@ void MyGame::Render()
 				e = e0;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Duplicate")) {
+		if (ImGui::Button("Duplicate"))
+		{
 			auto prev = e;
 			auto e0 = reg.create();
 			if (reg.valid(prev))
@@ -182,15 +186,114 @@ void MyGame::Render()
 			if (!ImGui::GetIO().KeyShift)
 				e = e0;
 		}
+		if (ImGui::Button("Export"))
+		{
+			OPENFILENAME    ofn;
+			wchar_t         filename[256];
+
+			filename[0] = '\0';  //忘れるとデフォルトファイル名に変な文字列が表示される
+			memset(&ofn, 0, sizeof(OPENFILENAME));  //構造体を0でクリア
+			ofn.lStructSize = sizeof(OPENFILENAME);
+			ofn.lpstrFilter = L"Prefab File (*.prefab.json)\0*.prefab.json\0All Files(*.*)\0*.*\0\0";
+			ofn.lpstrFile = filename;
+			ofn.nMaxFile = sizeof(filename);
+			ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+			ofn.lpstrDefExt = L"prefab.json";
+
+			if (GetSaveFileName(&ofn) == TRUE)
+			{
+				std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
+				std::string location = cv.to_bytes(std::wstring(filename));
+				Components::SaveEntity(location, reg, e);
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Import"))
+		{
+			OPENFILENAME    ofn;
+			wchar_t         filename[256];
+
+			filename[0] = '\0';  //忘れるとデフォルトファイル名に変な文字列が表示される
+			memset(&ofn, 0, sizeof(OPENFILENAME));  //構造体を0でクリア
+			ofn.lStructSize = sizeof(OPENFILENAME);
+			ofn.lpstrFilter = L"Prefab File (*.prefab.json)\0*.prefab.json\0All Files(*.*)\0*.*\0\0";
+			ofn.lpstrFile = filename;
+			ofn.nMaxFile = sizeof(filename);
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+			ofn.lpstrDefExt = L"prefab.json";
+
+			if (GetOpenFileName(&ofn) == TRUE)
+			{
+				std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
+				std::string location = cv.to_bytes(std::wstring(filename));
+				auto prev = e;
+				auto e0 = reg.create();
+				Components::LoadEntity(location, reg, e0);
+				auto& t = reg.get_or_assign<Transform>(e0);
+				if (reg.valid(prev))
+					t.parent = prev;
+				if (!ImGui::GetIO().KeyShift)
+					e = e0;
+			}
+		}
 
 		ImGui::Separator();
 
-		if (ImGui::Button("Save Scene")) {
+		ImGui::LabelText("Scene", m_scene.name.c_str());
+
+		if (ImGui::Button("Save Scene"))
+		{
 			m_scene.Save();
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Load Scene")) {
+		if (ImGui::Button("Reset"))
+		{
 			m_scene.Load();
+		}
+		if (ImGui::Button("Save Scene As"))
+		{
+			OPENFILENAME    ofn;
+			wchar_t         filename[256];
+
+			filename[0] = '\0';  //忘れるとデフォルトファイル名に変な文字列が表示される
+			memset(&ofn, 0, sizeof(OPENFILENAME));  //構造体を0でクリア
+			ofn.lStructSize = sizeof(OPENFILENAME);
+			ofn.lpstrFilter = L"Scene File (*.scene.json)\0*.scene.json\0All Files(*.*)\0*.*\0\0";
+			ofn.lpstrFile = filename;
+			ofn.nMaxFile = sizeof(filename);
+			ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+			ofn.lpstrDefExt = L"scene.json";
+
+			if (GetSaveFileName(&ofn) == TRUE)
+			{
+				std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
+				std::string location = cv.to_bytes(std::wstring(filename));
+				m_scene.location = location;
+				m_scene.Save();
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Load Scene"))
+		{
+			OPENFILENAME    ofn;
+			wchar_t         filename[256];
+
+			filename[0] = '\0';  //忘れるとデフォルトファイル名に変な文字列が表示される
+			memset(&ofn, 0, sizeof(OPENFILENAME));  //構造体を0でクリア
+			ofn.lStructSize = sizeof(OPENFILENAME);
+			ofn.lpstrFilter = L"Scene File (*.scene.json)\0*.scene.json\0All Files(*.*)\0*.*\0\0";
+			ofn.lpstrFile = filename;
+			ofn.nMaxFile = sizeof(filename);
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+			ofn.lpstrDefExt = L"scene.json";
+
+			if (GetOpenFileName(&ofn) == TRUE)
+			{
+				std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
+				std::string location = cv.to_bytes(std::wstring(filename));
+				m_scene.location = location;
+				m_scene.Load();
+			}
 		}
 
 		ImGui::Separator();

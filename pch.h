@@ -14,7 +14,7 @@
 
 // DirectX apps don't need GDI
 #define NODRAWTEXT
-#define NOGDI
+//#define NOGDI
 #define NOBITMAP
 
 // Include <mcx.h> if you need this
@@ -27,7 +27,7 @@
 #define NOHELP
 
 // Windows
-#define WIN32_LEAN_AND_MEAN
+//#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 // COM
@@ -71,6 +71,8 @@
 #include <deque>
 
 #include <chrono>
+#include <locale> 
+#include <codecvt> 
 
 // DirectXTK
 #include <Keyboard.h>

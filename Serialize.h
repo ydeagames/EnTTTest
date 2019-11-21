@@ -105,21 +105,21 @@ namespace ECS
 		}
 
 	private:
-		template<typename Component>
+		template<typename Tag>
 		void tag0(entt::SnapshotLoader<Entity>& loader) {
-			const char* name = IdentifierResolver::name<Component>();
+			const char* name = IdentifierResolver::name<Tag>();
 			if (archive.hasName(name))
 			{
 				archive.setNextName(name);
-				loader.tag<Component>(*this);
+				loader.tag<Tag>(*this);
 			}
 		}
 
 	public:
-		template<typename... Component>
+		template<typename... Tags>
 		void tag(entt::SnapshotLoader<Entity>& loader) {
 			using accumulator_type = int[];
-			accumulator_type accumulator = { 0, (tag0<Component>(loader), 0)... };
+			accumulator_type accumulator = { 0, (tag0<Tags>(loader), 0)... };
 			(void)accumulator;
 		}
 	};
@@ -190,10 +190,10 @@ namespace ECS
 		}
 
 	public:
-		template<typename... Component>
+		template<typename... Components>
 		void component(entt::SnapshotLoader<Entity>& loader) {
 			using accumulator_type = int[];
-			accumulator_type accumulator = { 0, (component0<Component>(loader), 0)... };
+			accumulator_type accumulator = { 0, (component0<Components>(loader), 0)... };
 			(void)accumulator;
 		}
 	};
@@ -271,16 +271,16 @@ namespace ECS
 
 	private:
 		template<typename Tag>
-		void tag0(entt::Snapshot<Entity>& saver) {
+		void tag0(const entt::Snapshot<Entity>& saver) {
 			archive.setNextName(IdentifierResolver::name<Tag>());
 			saver.tag<Tag>(*this);
 		}
 
 	public:
-		template<typename... Tag>
-		void tag(entt::Snapshot<Entity>& saver) {
+		template<typename... Tags>
+		void tag(const entt::Snapshot<Entity>& saver) {
 			using accumulator_type = int[];
-			accumulator_type accumulator = { 0, (tag0<Tag>(saver), 0)... };
+			accumulator_type accumulator = { 0, (tag0<Tags>(saver), 0)... };
 			(void)accumulator;
 		}
 	};
@@ -340,16 +340,105 @@ namespace ECS
 
 	private:
 		template<typename Component>
-		void component0(entt::Snapshot<Entity>& saver) {
+		void component0(const entt::Snapshot<Entity>& saver) {
 			archive.setNextName(IdentifierResolver::name<Component>());
 			saver.component<Component>(*this);
 		}
 
 	public:
-		template<typename... Component>
-		void component(entt::Snapshot<Entity>& saver) {
+		template<typename... Components>
+		void component(const entt::Snapshot<Entity>& saver) {
 			using accumulator_type = int[];
-			accumulator_type accumulator = { 0, (component0<Component>(saver), 0)... };
+			accumulator_type accumulator = { 0, (component0<Components>(saver), 0)... };
+			(void)accumulator;
+		}
+	};
+
+	template<typename Registry>
+	class ComponentClone
+	{
+	public:
+		template<typename Component>
+		static void Clone(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type dst)
+		{
+			if (reg.has<Component>(src))
+			{
+				std::stringstream buffer;
+				{
+					cereal::BinaryOutputArchive output(buffer);
+					auto& srcComponent = reg.get<Component>(src);
+					output(srcComponent);
+				}
+				{
+					cereal::BinaryInputArchive input(buffer);
+					auto& dstComponent = reg.accommodate<Component>(dst);
+					input(dstComponent);
+				}
+			}
+		}
+	};
+
+	template <typename Registry>
+	class EntityExporter
+	{
+	private:
+		cereal::JSONOutputArchive& archive;
+
+	public:
+		EntityExporter(cereal::JSONOutputArchive& archive)
+			: archive(archive)
+		{
+		}
+
+	private:
+		template<typename Component>
+		void component0(const Registry& reg, typename Registry::entity_type entity) {
+			archive.setNextName(IdentifierResolver::name<Component>());
+			if (reg.has<Component>(entity))
+			{
+				auto& component = reg.get<Component>(entity);
+				archive(component);
+			}
+		}
+
+	public:
+		template<typename... Component>
+		void component(const Registry& reg, typename Registry::entity_type entity) {
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (component0<Component>(reg, entity), 0)... };
+			(void)accumulator;
+		}
+	};
+
+	template <typename Registry>
+	class EntityImporter
+	{
+	private:
+		cereal::JSONInputArchive& archive;
+
+	public:
+		EntityImporter(cereal::JSONInputArchive& archive)
+			: archive(archive)
+		{
+		}
+
+	private:
+		template<typename Component>
+		void component0(Registry& reg, typename Registry::entity_type entity) {
+			const char* name = IdentifierResolver::name<Component>();
+			if (archive.hasName(name))
+			{
+				archive.setNextName(name);
+				auto& component = reg.accommodate<Component>(entity);
+				archive(component);
+			}
+		}
+
+	public:
+		template<typename... Component>
+		void component(Registry& reg, typename Registry::entity_type entity) {
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (component0<Component>(reg, entity), 0)... };
 			(void)accumulator;
 		}
 	};
