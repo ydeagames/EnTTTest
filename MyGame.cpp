@@ -136,17 +136,22 @@ void MyGame::Render()
 			}
 		}
 
-		if (ImGui::Button("New Entity")) {
+		if (ImGui::Button("New")) {
 			auto prev = e;
 			auto e0 = reg.create();
 			Transform t;
 			if (reg.valid(prev))
-				t.parent = prev;
+			{
+				auto parent = reg.has<Transform>(prev) ? reg.get<Transform>(prev).parent : entt::null;
+				if (reg.valid(parent))
+					t.parent = parent;
+			}
 			reg.assign<Transform>(e0, std::move(t));
-			e = e0;
+			if (!ImGui::GetIO().KeyShift)
+				e = e0;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Delete Entity")) {
+		if (ImGui::Button("Delete")) {
 			auto rec0 = [&](auto& e, auto& rec) mutable -> void {
 				reg.view<Transform>().each([&](auto entity, Transform& component) {
 					if (component.parent == e)
@@ -156,6 +161,30 @@ void MyGame::Render()
 			};
 			rec0(e, rec0);
 		}
+		if (ImGui::Button("New Child")) {
+			auto prev = e;
+			auto e0 = reg.create();
+			Transform t;
+			if (reg.valid(prev))
+				t.parent = prev;
+			reg.assign<Transform>(e0, std::move(t));
+			if (!ImGui::GetIO().KeyShift)
+				e = e0;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Duplicate")) {
+			auto prev = e;
+			auto e0 = reg.create();
+			if (reg.valid(prev))
+			{
+				Components::CloneComponents(reg, prev, e0);
+			}
+			if (!ImGui::GetIO().KeyShift)
+				e = e0;
+		}
+
+		ImGui::Separator();
+
 		if (ImGui::Button("Save Scene")) {
 			m_scene.Save();
 		}

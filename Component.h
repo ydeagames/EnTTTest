@@ -106,6 +106,30 @@ namespace ECS
 		}
 	};
 
+	template<typename Registry>
+	class ComponentClone
+	{
+	public:
+		template<typename Component>
+		static void Clone(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type dst)
+		{
+			if (reg.has<Component>(src))
+			{
+				std::stringstream buffer;
+				{
+					cereal::BinaryOutputArchive output(buffer);
+					auto& srcComponent = reg.get<Component>(src);
+					output(srcComponent);
+				}
+				{
+					cereal::BinaryInputArchive input(buffer);
+					auto& dstComponent = reg.accommodate<Component>(dst);
+					input(dstComponent);
+				}
+			}
+		}
+	};
+
 	// Declaration of a template
 	template<typename Components, typename Events, typename Tags>
 	class ComponentManager;
@@ -135,6 +159,12 @@ namespace ECS
 			ComponentDependency<Registry>::DependsOn<Component>(reg);
 		}
 
+		template<typename Registry, typename Component>
+		static void CloneComponent(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type dst)
+		{
+			ComponentClone<Registry>::Clone<Component>(reg, src, dst);
+		}
+
 	public:
 		static void InitializeEvents()
 		{
@@ -156,6 +186,14 @@ namespace ECS
 		{
 			using accumulator_type = int[];
 			accumulator_type accumulator = { 0, (InitializeDependency<Registry, Components>(reg), 0)... };
+			(void)accumulator;
+		}
+
+		template<typename Registry>
+		static void CloneComponents(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type dst)
+		{
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (CloneComponent<Registry, Components>(reg, src, dst), 0)... };
 			(void)accumulator;
 		}
 

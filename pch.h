@@ -111,6 +111,7 @@ namespace entt
 // Cereal
 #include <cereal/cereal.hpp>
 #include <cereal/archives/json.hpp>
+#include <cereal/archives/binary.hpp>
 
 // ImGui
 #include <imgui/imgui.h>
