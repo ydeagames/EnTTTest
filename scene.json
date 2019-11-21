@@ -52,9 +52,18 @@
                 }
             }
         ],
-        "MoveUpdater": [],
+        "MoveUpdater": [
+            {
+                "id": 0,
+                "component": {}
+            }
+        ],
         "MoveDownUpdater": [],
         "PrimitiveRenderer": [
+            {
+                "id": 0,
+                "component": {}
+            },
             {
                 "id": 1,
                 "component": {}

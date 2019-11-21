@@ -104,6 +104,37 @@ void MyGame::RenderInitialize()
 	Renderable::RenderInitialize(*m_context, m_scene);
 }
 
+std::string GetFileName(const std::string& name)
+{
+	std::string filename = name;
+
+	// Remove directory if present.
+	// Do this before extension removal incase directory has a period character.
+	const size_t last_slash_idx = filename.find_last_of("\\/");
+	if (std::string::npos != last_slash_idx)
+	{
+		filename.erase(0, last_slash_idx + 1);
+	}
+
+	// Remove extension if present.
+	{
+		const size_t period_idx = filename.rfind('.');
+		if (std::string::npos != period_idx)
+		{
+			filename.erase(period_idx);
+		}
+	}
+	{
+		const size_t period_idx = filename.rfind('.');
+		if (std::string::npos != period_idx)
+		{
+			filename.erase(period_idx);
+		}
+	}
+
+	return filename;
+}
+
 void MyGame::Render()
 {
 	static int bench = Bench();
@@ -269,6 +300,7 @@ void MyGame::Render()
 				std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
 				std::string location = cv.to_bytes(std::wstring(filename));
 				m_scene.location = location;
+				m_scene.name = GetFileName(location);
 				m_scene.Save();
 			}
 		}
@@ -292,6 +324,7 @@ void MyGame::Render()
 				std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
 				std::string location = cv.to_bytes(std::wstring(filename));
 				m_scene.location = location;
+				m_scene.name = GetFileName(location);
 				m_scene.Load();
 			}
 		}
