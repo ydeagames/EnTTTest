@@ -11,7 +11,7 @@ ImGuiManager::~ImGuiManager()
 {
 }
 
-void ImGuiManager::Initialize(GameContext& context)
+void ImGuiManager::RenderInitialize(GameContext& context)
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -77,7 +77,7 @@ void ImGuiManager::End(GameContext& context)
 	}
 }
 
-void ImGuiManager::Finalize(GameContext& context)
+void ImGuiManager::RenderFinalize(GameContext& context)
 {
 	// Cleanup
 	ImGui_ImplDX11_Shutdown();

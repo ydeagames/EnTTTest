@@ -19,7 +19,8 @@ public:
     Game() noexcept(false);
 
     // Initialization and management
-    void Initialize(HWND window, int width, int height);
+	void Initialize(HWND window, int width, int height);
+	void Finalize();
 
     // Basic game loop
     void Tick();

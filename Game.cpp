@@ -33,15 +33,17 @@ void Game::Initialize(HWND window, int width, int height)
     m_deviceResources->CreateWindowSizeDependentResources();
     CreateWindowSizeDependentResources();
 
-	auto imgui = m_context.Register<ImGuiManager>();
-	imgui.Initialize(m_context);
-
     // TODO: Change the timer settings if you want something other than the default variable timestep mode.
     // e.g. for 60 FPS fixed timestep update logic, call:
     /*
     m_timer.SetFixedTimeStep(true);
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     */
+}
+
+void Game::Finalize()
+{
+	m_myGame.RenderFinalize();
 }
 
 #pragma region Frame Update

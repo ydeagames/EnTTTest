@@ -51,6 +51,12 @@ void MyGame::Update()
 
 void MyGame::RenderInitialize()
 {
+	// ImGuiコンテキスト
+	auto imgui = m_context->Register<ImGuiManager>();
+
+	// ImGui初期化
+	imgui.RenderInitialize(*m_context);
+
 	Renderable::RenderInitialize(*m_context, m_scene);
 }
 
@@ -80,6 +86,15 @@ void MyGame::Render()
 void MyGame::RenderFinalize()
 {
 	Renderable::RenderFinalize(*m_context, m_scene);
+
+	// ImGuiコンテキスト
+	auto& imgui = m_context->Get<ImGuiManager>();
+
+	// ImGuiファイナライズ
+	imgui.RenderFinalize(*m_context);
+
+	// ImGui削除
+	m_context->Remove<ImGuiManager>();
 }
 
 MyGame::~MyGame()

@@ -25,7 +25,19 @@ public:
 	template<typename Component, typename... Args>
 	Component& Register(Args&& ... args)
 	{
-		return registry.assign<Component>(entity, std::forward<Component>(args)...);
+		return registry.assign<Component>(entity, std::forward<Args>(args)...);
+	}
+
+	template<typename Component>
+	bool Has()
+	{
+		return registry.has<Component>(entity);
+	}
+
+	template<typename Component>
+	void Remove()
+	{
+		return registry.remove<Component>(entity);
 	}
 
 	template<typename Component>
