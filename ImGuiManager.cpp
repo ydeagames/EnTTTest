@@ -53,11 +53,7 @@ void ImGuiManager::Initialize(GameContext& context)
 	io.Fonts->AddFontDefault();
 }
 
-void ImGuiManager::Update(GameContext& context)
-{
-}
-
-void ImGuiManager::BeforeRender(GameContext& context)
+void ImGuiManager::Begin(GameContext& context)
 {
 	// Start the Dear ImGui frame
 	{
@@ -72,11 +68,7 @@ void ImGuiManager::BeforeRender(GameContext& context)
 	}
 }
 
-void ImGuiManager::Render(GameContext& context)
-{
-}
-
-void ImGuiManager::AfterRender(GameContext& context)
+void ImGuiManager::End(GameContext& context)
 {
 	// Rendering
 	{

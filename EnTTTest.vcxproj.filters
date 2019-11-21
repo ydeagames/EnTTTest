@@ -29,6 +29,9 @@
     <Filter Include="Cereal\details">
       <UniqueIdentifier>{8934b4fe-8b5f-4d77-8778-57e8fa341e1c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{26b93709-2b8a-432a-8c83-3115fe5fef82}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -103,8 +106,6 @@
     <ClInclude Include="ImGui\imgui_impl_dx11.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ImGuiManager.h" />
-    <ClInclude Include="ImGuiStyles.h" />
     <ClInclude Include="GameContext.h">
       <Filter>ECS</Filter>
     </ClInclude>
@@ -144,6 +145,16 @@
     <ClInclude Include="Component.h">
       <Filter>ECS</Filter>
     </ClInclude>
+    <ClInclude Include="ImGuiManager.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiStyles.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -162,8 +173,16 @@
     <ClCompile Include="Scene.cpp">
       <Filter>ECS</Filter>
     </ClCompile>
-    <ClCompile Include="ImGuiManager.cpp" />
-    <ClCompile Include="ImGuiStyles.cpp" />
+    <ClCompile Include="ImGuiManager.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGuiStyles.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

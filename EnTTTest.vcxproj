@@ -188,6 +188,7 @@
     <ClInclude Include="EventBus.h" />
     <ClInclude Include="GameContext.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Widgets.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="ImGuiStyles.h" />
     <ClInclude Include="ImGui\imconfig.h" />
@@ -207,12 +208,14 @@
     <ClInclude Include="MyGame.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="StepTimer.h" />
+    <ClInclude Include="WindowsUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Components.cpp" />
     <ClCompile Include="DeviceResources.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Widgets.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="ImGuiStyles.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -224,6 +227,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="WindowsUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

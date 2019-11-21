@@ -15,12 +15,9 @@ private:
 public:
 	// ê∂ê¨
 	void Initialize(GameContext& context);
-	// çXêV
-	void Update(GameContext& context);
 	// ï`âÊ
-	void BeforeRender(GameContext& context);
-	void Render(GameContext& context);
-	void AfterRender(GameContext& context);
+	void Begin(GameContext& context);
+	void End(GameContext& context);
 	// îjä¸
 	void Finalize(GameContext& context);
 };
