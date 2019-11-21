@@ -115,6 +115,11 @@ namespace entt
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
 
+// Cereal Optional
+#include <cereal/cereal_optional/optional_nvp.hpp>
+#include <cereal/cereal_optional/optional_json.hpp>
+#include <cereal/cereal_optional/optional_binary.hpp>
+
 // ImGui
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_dx11.h>

@@ -18,18 +18,33 @@ void prologue(JSONOutputArchive &, const OptionalNameValuePair<T, TV> &) { }
 template<class T, class TV>
 void epilogue(JSONOutputArchive &, const OptionalNameValuePair<T, TV> &) { }
 
+template<typename TV, typename T>
+auto loadDefault(int, T& nvp) ->std::enable_if_t<!std::is_same<TV, void>::value>
+{
+	nvp.value = std::move(nvp.defaultValue);
+}
+
+template<typename TV, typename T>
+void loadDefault(bool, T& nvp)
+{
+}
+
 /// Loads optional nvp from JSONInputArchive if any. In case of exception sets fallback value
 /// @param archive JSONInputArchive
 /// @param nvp Optional NVP to load
 template<class T, class TV>
 void CEREAL_LOAD_FUNCTION_NAME(JSONInputArchive &archive, OptionalNameValuePair<T, TV> &nvp) {
-    try {
+    if (archive.hasName(nvp.name))
+	{
         archive.setNextName(nvp.name);
         archive(nvp.value);
-    } catch (cereal::Exception &) {
-        if constexpr(!std::is_same<TV, void>::value) {
-        nvp.value = std::move(nvp.defaultValue);
-        }
+    }
+	else
+	{
+        //if constexpr(!std::is_same<TV, void>::value) {
+        //nvp.value = std::move(nvp.defaultValue);
+		loadDefault<TV>(0, nvp);
+        //}
         archive.setNextName(nullptr);
     }
 }

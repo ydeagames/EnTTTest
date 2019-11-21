@@ -47,8 +47,8 @@ public:
 	template<class Archive>
 	void serialize(Archive& archive)
 	{
-		archive(CEREAL_NVP(name), CEREAL_NVP(parent), CEREAL_NVP(isStatic));
-		archive(CEREAL_NVP(position), CEREAL_NVP(rotation), CEREAL_NVP(scale));
+		archive(CEREAL_OPTIONAL_NVP(name), CEREAL_OPTIONAL_NVP(parent), CEREAL_OPTIONAL_NVP(isStatic));
+		archive(CEREAL_OPTIONAL_NVP(position), CEREAL_OPTIONAL_NVP(rotation), CEREAL_OPTIONAL_NVP(scale));
 	}
 
 	void EditorGui(GameContext& ctx, GameObject& entity);
