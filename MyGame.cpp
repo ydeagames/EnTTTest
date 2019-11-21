@@ -38,7 +38,6 @@ MyGame::MyGame(GameContext* context)
 	: m_context(context)
 {
 	Components::InitializeEvents();
-	Components::InitializeDependency(m_scene.registry);
 
 	m_scene.name = "scene";
 	m_scene.location = m_scene.name + ".json";

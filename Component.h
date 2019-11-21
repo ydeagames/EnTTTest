@@ -223,6 +223,7 @@ namespace ECS
 				catch (cereal::Exception e)
 				{
 					// —áŠO
+					std::cerr << e.what() << std::endl;
 				}
 			}
 			return false;
@@ -277,9 +278,10 @@ namespace ECS
 					}
 					return true;
 				}
-				catch (cereal::Exception)
+				catch (cereal::Exception e)
 				{
 					// —áŠO
+					std::cerr << e.what() << std::endl;
 				}
 			}
 			return false;

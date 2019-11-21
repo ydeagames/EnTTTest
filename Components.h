@@ -47,6 +47,7 @@ public:
 	template<class Archive>
 	void serialize(Archive& archive)
 	{
+		archive(CEREAL_NVP(name), CEREAL_NVP(parent), CEREAL_NVP(isStatic));
 		archive(CEREAL_NVP(position), CEREAL_NVP(rotation), CEREAL_NVP(scale));
 	}
 

@@ -9,9 +9,16 @@ GameObject Scene::Create()
 	return GameObject{ &registry, registry.create() };
 }
 
+Scene::Scene()
+{
+	Components::InitializeDependency(registry);
+}
+
 bool Scene::Load()
 {
-	return Components::LoadScene(location, registry);
+	bool b = Components::LoadScene(location, registry);
+	Components::InitializeDependency(registry);
+	return b;
 }
 
 bool Scene::Save() const

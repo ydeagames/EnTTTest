@@ -365,12 +365,12 @@ namespace ECS
 			{
 				std::stringstream buffer;
 				{
-					cereal::BinaryOutputArchive output(buffer);
+					cereal::JSONOutputArchive output(buffer);
 					auto& srcComponent = reg.get<Component>(src);
 					output(srcComponent);
 				}
 				{
-					cereal::BinaryInputArchive input(buffer);
+					cereal::JSONInputArchive input(buffer);
 					auto& dstComponent = reg.accommodate<Component>(dst);
 					input(dstComponent);
 				}
