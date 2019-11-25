@@ -345,11 +345,24 @@ namespace ECS
 			saver.component<Component>(*this);
 		}
 
+		template<typename Component, typename It>
+		void component0(const entt::Snapshot<Entity>& saver, It first, It last) {
+			archive.setNextName(IdentifierResolver::name<Component>());
+			saver.component<Component>(*this, first, last);
+		}
+
 	public:
 		template<typename... Components>
 		void component(const entt::Snapshot<Entity>& saver) {
 			using accumulator_type = int[];
 			accumulator_type accumulator = { 0, (component0<Components>(saver), 0)... };
+			(void)accumulator;
+		}
+
+		template<typename... Components, typename It>
+		void component(const entt::Snapshot<Entity>& saver, It first, It last) {
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (component0<Components>(saver, first, last), 0)... };
 			(void)accumulator;
 		}
 	};
@@ -459,6 +472,61 @@ namespace ECS
 							archive.setNextName("components");
 							archive.startNode();
 							carchive.component<Components...>(snap);
+							archive.finishNode();
+						}
+					}
+					return true;
+				}
+				catch (cereal::Exception e)
+				{
+					// —áŠO
+					std::cerr << e.what() << std::endl;
+				}
+			}
+			return false;
+		}
+
+		template<typename Snap>
+		static bool Export(std::ostream& storage, Snap&& snap, const std::vector<typename Registry::entity_type>& entities)
+		{
+			using entity_type = typename Registry::entity_type;
+			if (storage)
+			{
+				try
+				{
+					// output finishes flushing its contents when it goes out of scope
+					cereal::JSONOutputArchive archive{ storage };
+					ObjectComponentSnapshot<entity_type> carchive(archive);
+					{
+						auto first = entities.begin();
+						auto last = entities.end();
+						{
+							archive.setNextName("entities");
+							archive.startNode();
+							{
+								archive.setNextName("created");
+								archive.startNode();
+								archive.makeArray();
+								std::for_each(first, last, archive);
+								archive.finishNode();
+							}
+							{
+								archive.setNextName("destroyed");
+								archive.startNode();
+								archive.makeArray();
+								archive.finishNode();
+							}
+							archive.finishNode();
+						}
+						{
+							archive.setNextName("tags");
+							archive.startNode();
+							archive.finishNode();
+						}
+						{
+							archive.setNextName("components");
+							archive.startNode();
+							carchive.component<Components...>(snap, first, last);
 							archive.finishNode();
 						}
 					}
