@@ -17,8 +17,9 @@ namespace ECS
 
 	private:
 		template<typename T>
-		struct Creation
+		class Creation
 		{
+		public:
 			void on(Registry& registry, typename Registry::entity_type entity)
 			{
 				registry.get_or_assign<T>(entity);
@@ -26,8 +27,9 @@ namespace ECS
 		};
 
 		template<typename T>
-		struct Deletion
+		class Deletion
 		{
+		public:
 			void on(Registry& registry, typename Registry::entity_type entity)
 			{
 				registry.reset<T>(entity);
@@ -106,6 +108,65 @@ namespace ECS
 		}
 	};
 
+	template<typename Registry>
+	class ComponentLifecycle
+	{
+	private:
+		template<typename Component, typename = decltype(&Component::Awake)>
+		static void Awake0(int, GameContext & ctx, Registry & registry)
+		{
+			class Creation
+			{
+			public:
+				GameContext& ctx;
+
+			public:
+				void on(Registry& registry, typename Registry::entity_type entity)
+				{
+					registry.get<Component>(entity).Awake(ctx);
+				}
+			};
+			Creation cre;
+			registry.construction<Component>().connect<Creation, & Creation::on>(&cre);
+		}
+
+		template<typename Component>
+		static void Awake0(bool, GameContext& ctx, Registry& reg)
+		{
+		}
+
+		template<typename Component, typename = decltype(&Component::Destroy)>
+		static void Destroy0(int, GameContext & ctx, Registry & registry)
+		{
+			class Deletion
+			{
+			public:
+				GameContext& ctx;
+
+			public:
+				void on(Registry& registry, typename Registry::entity_type entity)
+				{
+					registry.get<Component>(entity).Destroy(ctx);
+				}
+			};
+			Deletion del(ctx);
+			registry.destruction<Component>().connect<Deletion, & Deletion::on>(&del);
+		}
+
+		template<typename Component>
+		static void Destroy0(bool, GameContext& ctx, Registry& reg)
+		{
+		}
+
+	public:
+		template<typename Component>
+		static void Lifecycle(GameContext& ctx, Registry& reg)
+		{
+			Awake0<Component>(0, ctx, reg);
+			Destroy0<Component>(0, ctx, reg);
+		}
+	};
+
 	// Declaration of a template
 	template<typename Components, typename Events, typename Tags>
 	class ComponentManager;
@@ -131,6 +192,12 @@ namespace ECS
 
 		template<typename Registry, typename Component>
 		static void InitializeDependency(Registry& reg)
+		{
+			ComponentDependency<Registry>::DependsOn<Component>(reg);
+		}
+
+		template<typename Registry, typename Component>
+		static void InitializeLifecycleEvent(Registry& reg)
 		{
 			ComponentDependency<Registry>::DependsOn<Component>(reg);
 		}
@@ -162,6 +229,14 @@ namespace ECS
 		{
 			using accumulator_type = int[];
 			accumulator_type accumulator = { 0, (InitializeDependency<Registry, Components>(reg), 0)... };
+			(void)accumulator;
+		}
+
+		template<typename Registry>
+		static void InitializeLifecycleEvents(Registry& reg)
+		{
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (InitializeLifecycleEvent<Registry, Components>(reg), 0)... };
 			(void)accumulator;
 		}
 
