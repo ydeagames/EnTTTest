@@ -106,7 +106,7 @@ namespace ECS
 
 	private:
 		template<typename Tag>
-		void tag0(entt::SnapshotLoader<Entity>& loader) {
+		void tag0(const entt::SnapshotLoader<Entity>& loader) {
 			const char* name = IdentifierResolver::name<Tag>();
 			if (archive.hasName(name))
 			{
@@ -117,7 +117,7 @@ namespace ECS
 
 	public:
 		template<typename... Tags>
-		void tag(entt::SnapshotLoader<Entity>& loader) {
+		void tag(const entt::SnapshotLoader<Entity>& loader) {
 			using accumulator_type = int[];
 			accumulator_type accumulator = { 0, (tag0<Tags>(loader), 0)... };
 			(void)accumulator;
@@ -180,7 +180,7 @@ namespace ECS
 
 	private:
 		template<typename Component>
-		void component0(entt::SnapshotLoader<Entity>& loader) {
+		void component0(const entt::SnapshotLoader<Entity>& loader) {
 			const char* name = IdentifierResolver::name<Component>();
 			if (archive.hasName(name))
 			{
@@ -191,7 +191,7 @@ namespace ECS
 
 	public:
 		template<typename... Components>
-		void component(entt::SnapshotLoader<Entity>& loader) {
+		void component(const entt::SnapshotLoader<Entity>& loader) {
 			using accumulator_type = int[];
 			accumulator_type accumulator = { 0, (component0<Components>(loader), 0)... };
 			(void)accumulator;
@@ -351,6 +351,126 @@ namespace ECS
 			using accumulator_type = int[];
 			accumulator_type accumulator = { 0, (component0<Components>(saver), 0)... };
 			(void)accumulator;
+		}
+	};
+
+	template<typename Registry, typename Components, typename Tags>
+	class ObjectSerializer;
+
+	template<typename Registry, typename... Components, typename... Tags>
+	class ObjectSerializer<Registry, std::tuple<Components...>, std::tuple<Tags...>>
+	{
+	public:
+		template<typename Snap>
+		static bool Import(std::istream& storage, Snap&& snap)
+		{
+			using entity_type = typename Registry::entity_type;
+			if (storage)
+			{
+				try
+				{
+					cereal::JSONInputArchive archive{ storage };
+					ObjectSnapshotLoader<entity_type> oarchive(archive);
+					ObjectTagSnapshotLoader<entity_type> tarchive(archive);
+					ObjectComponentSnapshotLoader<entity_type> carchive(archive);
+					{
+						{
+							archive.setNextName("entities");
+							archive.startNode();
+							{
+								archive.setNextName("created");
+								archive.startNode();
+								snap.entities(oarchive);
+								archive.finishNode();
+							}
+							{
+								archive.setNextName("destroyed");
+								archive.startNode();
+								snap.destroyed(oarchive);
+								archive.finishNode();
+							}
+							archive.finishNode();
+						}
+						{
+							archive.setNextName("tags");
+							archive.startNode();
+							tarchive.tag<Components...>(snap);
+							archive.finishNode();
+						}
+						{
+							archive.setNextName("components");
+							archive.startNode();
+							carchive.component<Components...>(snap);
+							archive.finishNode();
+						}
+						//snap.orphans();
+					}
+					return true;
+				}
+				catch (cereal::Exception e)
+				{
+					// —áŠO
+					std::cerr << e.what() << std::endl;
+				}
+			}
+			return false;
+		}
+
+		template<typename Snap>
+		static bool Export(std::ostream& storage, Snap&& snap)
+		{
+			using entity_type = typename Registry::entity_type;
+			if (storage)
+			{
+				try
+				{
+					// output finishes flushing its contents when it goes out of scope
+					cereal::JSONOutputArchive archive{ storage };
+					ObjectSnapshot<entity_type> oarchive(archive);
+					ObjectTagSnapshot<entity_type> tarchive(archive);
+					ObjectComponentSnapshot<entity_type> carchive(archive);
+					{
+						{
+							archive.setNextName("entities");
+							archive.startNode();
+							{
+								archive.setNextName("created");
+								archive.startNode();
+								archive.makeArray();
+								snap.entities(oarchive);
+								archive.finishNode();
+							}
+							{
+								archive.setNextName("destroyed");
+								archive.startNode();
+								archive.makeArray();
+								snap.destroyed(oarchive);
+								archive.finishNode();
+							}
+							archive.finishNode();
+						}
+						{
+							archive.setNextName("tags");
+							archive.startNode();
+							tarchive.tag<Tags...>(snap);
+							archive.finishNode();
+						}
+						{
+							archive.setNextName("components");
+							archive.startNode();
+							carchive.component<Components...>(snap);
+							archive.finishNode();
+						}
+					}
+					return true;
+				}
+				catch (cereal::Exception e)
+				{
+					// —áŠO
+					std::cerr << e.what() << std::endl;
+				}
+			}
+			return false;
 		}
 	};
 

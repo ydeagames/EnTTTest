@@ -3,6 +3,7 @@
 #include "Components.h"
 
 using Components = ECS::ComponentManager<
+	entt::registry,
 	std::tuple<
 		Transform,
 		MoveUpdater,
@@ -11,9 +12,9 @@ using Components = ECS::ComponentManager<
 		UpdateRenderer
 	>,
 	std::tuple<
-		Updatable,
-		Renderable
 	>,
 	std::tuple<
+		Updatable,
+		Renderable
 	>
 >;

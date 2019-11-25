@@ -168,11 +168,11 @@ namespace ECS
 	};
 
 	// Declaration of a template
-	template<typename Components, typename Events, typename Tags>
+	template<typename Registry, typename Components, typename Tags, typename Events>
 	class ComponentManager;
 
-	template<typename... Components, typename... Events, typename... Tags>
-	class ComponentManager<std::tuple<Components...>, std::tuple<Events...>, std::tuple<Tags...>>
+	template<typename Registry, typename... Components, typename... Tags, typename... Events>
+	class ComponentManager<Registry, std::tuple<Components...>, std::tuple<Tags...>, std::tuple<Events...>>
 	{
 	private:
 		template<typename Event>
@@ -252,114 +252,14 @@ namespace ECS
 		static bool LoadScene(const std::string& location, Registry& scene)
 		{
 			std::ifstream storage(location);
-			if (storage)
-			{
-				try
-				{
-					cereal::JSONInputArchive archive{ storage };
-					ObjectSnapshotLoader<typename Registry::entity_type> oarchive(archive);
-					ObjectTagSnapshotLoader<typename Registry::entity_type> tarchive(archive);
-					ObjectComponentSnapshotLoader<typename Registry::entity_type> carchive(archive);
-					auto snap = scene.restore();
-					{
-						{
-							archive.setNextName("entities");
-							archive.startNode();
-							{
-								archive.setNextName("created");
-								archive.startNode();
-								snap.entities(oarchive);
-								archive.finishNode();
-							}
-							{
-								archive.setNextName("destroyed");
-								archive.startNode();
-								snap.destroyed(oarchive);
-								archive.finishNode();
-							}
-							archive.finishNode();
-						}
-						{
-							archive.setNextName("tags");
-							archive.startNode();
-							tarchive.tag<Components...>(snap);
-							archive.finishNode();
-						}
-						{
-							archive.setNextName("components");
-							archive.startNode();
-							carchive.component<Components...>(snap);
-							archive.finishNode();
-						}
-						//snap.orphans();
-					}
-					return true;
-				}
-				catch (cereal::Exception e)
-				{
-					// —áŠO
-					std::cerr << e.what() << std::endl;
-				}
-			}
-			return false;
+			return ObjectSerializer<Registry, std::tuple<Components...>, std::tuple<Tags...>>::Import(storage, scene.restore());
 		}
 
 		template<typename Registry>
 		static bool SaveScene(const std::string& location, const Registry& scene)
 		{
 			std::ofstream storage(location);
-			if (storage)
-			{
-				try
-				{
-					// output finishes flushing its contents when it goes out of scope
-					cereal::JSONOutputArchive archive{ storage };
-					ObjectSnapshot<typename Registry::entity_type> oarchive(archive);
-					ObjectTagSnapshot<typename Registry::entity_type> tarchive(archive);
-					ObjectComponentSnapshot<typename Registry::entity_type> carchive(archive);
-					auto snap = scene.snapshot();
-					{
-						{
-							archive.setNextName("entities");
-							archive.startNode();
-							{
-								archive.setNextName("created");
-								archive.startNode();
-								archive.makeArray();
-								snap.entities(oarchive);
-								archive.finishNode();
-							}
-							{
-								archive.setNextName("destroyed");
-								archive.startNode();
-								archive.makeArray();
-								snap.destroyed(oarchive);
-								archive.finishNode();
-							}
-							archive.finishNode();
-						}
-						{
-							archive.setNextName("tags");
-							archive.startNode();
-							tarchive.tag<Tags...>(snap);
-							archive.finishNode();
-						}
-						{
-							archive.setNextName("components");
-							archive.startNode();
-							carchive.component<Components...>(snap);
-							archive.finishNode();
-						}
-					}
-					return true;
-				}
-				catch (cereal::Exception e)
-				{
-					// —áŠO
-					std::cerr << e.what() << std::endl;
-				}
-			}
-			return false;
+			return ObjectSerializer<Registry, std::tuple<Components...>, std::tuple<Tags...>>::Export(storage, scene.snapshot());
 		}
 
 		template<typename Registry>
