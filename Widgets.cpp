@@ -280,7 +280,7 @@ namespace Widgets
 			auto e0 = reg.create();
 			if (reg.valid(prev))
 			{
-				Components::CloneComponents(reg, prev, e0);
+				Components::CloneComponents(reg, std::vector<entt::entity>(prev), std::vector<entt::entity>(e0));
 			}
 			if (!ImGui::GetIO().KeyShift)
 				e = e0;

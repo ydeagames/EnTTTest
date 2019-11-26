@@ -542,30 +542,6 @@ namespace ECS
 		}
 	};
 
-	template<typename Registry>
-	class ComponentClone
-	{
-	public:
-		template<typename Component>
-		static void Clone(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type dst)
-		{
-			if (reg.has<Component>(src))
-			{
-				std::stringstream buffer;
-				{
-					cereal::JSONOutputArchive output(buffer);
-					auto& srcComponent = reg.get<Component>(src);
-					output(srcComponent);
-				}
-				{
-					cereal::JSONInputArchive input(buffer);
-					auto& dstComponent = reg.accommodate<Component>(dst);
-					input(dstComponent);
-				}
-			}
-		}
-	};
-
 	template <typename Registry>
 	class EntityExporter
 	{
@@ -580,7 +556,8 @@ namespace ECS
 
 	private:
 		template<typename Component>
-		void component0(const Registry& reg, typename Registry::entity_type entity) {
+		void component0(const Registry& reg, typename Registry::entity_type entity)
+		{
 			archive.setNextName(IdentifierResolver::name<Component>());
 			if (reg.has<Component>(entity))
 			{
@@ -590,11 +567,27 @@ namespace ECS
 		}
 
 	public:
-		template<typename... Component>
-		void component(const Registry& reg, typename Registry::entity_type entity) {
+		template<typename... Components>
+		void component(const Registry& reg, typename Registry::entity_type entity)
+		{
 			using accumulator_type = int[];
-			accumulator_type accumulator = { 0, (component0<Component>(reg, entity), 0)... };
+			accumulator_type accumulator = { 0, (component0<Components>(reg, entity), 0)... };
 			(void)accumulator;
+		}
+
+		template<typename... Components>
+		void components(const Registry& reg, const std::vector<typename Registry::entity_type>& entities)
+		{
+			archive.setNextName("objects");
+			archive.startNode();
+			archive.makeArray();
+			for (auto& entity : entities)
+			{
+				archive.startNode();
+				component<Components...>(reg, entity);
+				archive.finishNode();
+			}
+			archive.finishNode();
 		}
 	};
 
@@ -612,7 +605,8 @@ namespace ECS
 
 	private:
 		template<typename Component>
-		void component0(Registry& reg, typename Registry::entity_type entity) {
+		void component0(Registry& reg, typename Registry::entity_type entity)
+		{
 			const char* name = IdentifierResolver::name<Component>();
 			if (archive.hasName(name))
 			{
@@ -623,11 +617,64 @@ namespace ECS
 		}
 
 	public:
-		template<typename... Component>
-		void component(Registry& reg, typename Registry::entity_type entity) {
+		template<typename... Components>
+		void component(Registry& reg, typename Registry::entity_type entity)
+		{
 			using accumulator_type = int[];
-			accumulator_type accumulator = { 0, (component0<Component>(reg, entity), 0)... };
+			accumulator_type accumulator = { 0, (component0<Components>(reg, entity), 0)... };
 			(void)accumulator;
+		}
+
+		template<typename... Components>
+		void components(Registry& reg, const std::vector<typename Registry::entity_type>& entities)
+		{
+			archive.setNextName("objects");
+			archive.startNode();
+			//archive.makeArray();
+			for (auto& entity : entities)
+			{
+				archive.startNode();
+				component<Components...>(reg, entity);
+				archive.finishNode();
+			}
+			archive.finishNode();
+		}
+	};
+
+	template<typename Registry>
+	class ComponentClone
+	{
+	public:
+		template<typename... Components>
+		static void Clone(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type dst)
+		{
+			std::stringstream buffer;
+			{
+				cereal::JSONOutputArchive archive(buffer);
+				EntityExporter<Registry> serializer(archive);
+				serializer.component<Components...>(reg, src);
+			}
+			{
+				cereal::JSONInputArchive archive(buffer);
+				EntityImporter<Registry> serializer(archive);
+				serializer.component<Components...>(reg, dst);
+			}
+		}
+
+		template<typename... Components>
+		static void Clone(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, const std::vector<typename Registry::entity_type>& dsts)
+		{
+			std::stringstream buffer;
+			{
+				cereal::JSONOutputArchive archive(buffer);
+				EntityExporter<Registry> serializer(archive);
+				serializer.components<Components...>(reg, srcs);
+			}
+			{
+				cereal::JSONInputArchive archive(buffer);
+				EntityImporter<Registry> serializer(archive);
+				serializer.components<Components...>(reg, dsts);
+			}
 		}
 	};
 }

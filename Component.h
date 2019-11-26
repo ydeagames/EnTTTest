@@ -202,12 +202,6 @@ namespace ECS
 			ComponentDependency<Registry>::DependsOn<Component>(reg);
 		}
 
-		template<typename Registry, typename Component>
-		static void CloneComponent(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type dst)
-		{
-			ComponentClone<Registry>::Clone<Component>(reg, src, dst);
-		}
-
 	public:
 		static void InitializeEvents()
 		{
@@ -241,11 +235,9 @@ namespace ECS
 		}
 
 		template<typename Registry>
-		static void CloneComponents(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type dst)
+		static void CloneComponents(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, const std::vector<typename Registry::entity_type>& dsts)
 		{
-			using accumulator_type = int[];
-			accumulator_type accumulator = { 0, (CloneComponent<Registry, Components>(reg, src, dst), 0)... };
-			(void)accumulator;
+			ComponentClone<Registry>::Clone(reg, srcs, dsts);
 		}
 
 		template<typename Registry>
