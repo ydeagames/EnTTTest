@@ -51,6 +51,12 @@ public:
 		archive(CEREAL_OPTIONAL_NVP(position), CEREAL_OPTIONAL_NVP(rotation), CEREAL_OPTIONAL_NVP(scale));
 	}
 
+	template<class Reference>
+	void Reference(Reference& ref)
+	{
+		ref(parent);
+	}
+
 	void EditorGui(GameContext& ctx, GameObject& entity);
 };
 

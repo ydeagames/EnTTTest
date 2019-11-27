@@ -277,13 +277,26 @@ namespace Widgets
 		if (ImGui::Button("Duplicate"))
 		{
 			auto prev = e;
-			auto e0 = reg.create();
 			if (reg.valid(prev))
 			{
-				Components::CloneComponents(reg, std::vector<entt::entity>(prev), std::vector<entt::entity>(e0));
+				std::vector<entt::entity> src;
+				std::vector<entt::entity> dst;
+				auto rec0 = [&](auto& e, auto& rec) mutable -> void {
+					reg.view<Transform>().each([&](auto entity, Transform& component) {
+						if (component.parent == e)
+							rec(entity, rec);
+						});
+					src.push_back(e);
+					dst.push_back(reg.create());
+				};
+				rec0(e, rec0);
+
+				Components::CloneComponents(reg, src, dst);
+				Components::UpdateReferences(reg, src, dst);
+
+				if (!ImGui::GetIO().KeyShift)
+					e = *(dst.end() - 1);
 			}
-			if (!ImGui::GetIO().KeyShift)
-				e = e0;
 		}
 		if (ImGui::Button("Export"))
 		{

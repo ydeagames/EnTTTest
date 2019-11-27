@@ -56,6 +56,30 @@ namespace ECS
 	};
 
 	template<typename Registry>
+	class Reference
+	{
+	public:
+		using map_type = std::unordered_map<typename Registry::entity_type, typename Registry::entity_type>;
+
+	private:
+		Registry& registry;
+		const map_type& map;
+
+	public:
+		Reference(Registry& registry, const map_type& map)
+			: registry(registry)
+			, map(map)
+		{
+		}
+
+	public:
+		typename Registry::entity_type& operator()(typename Registry::entity_type& ref)
+		{
+			return ref = map[ref];
+		}
+	};
+
+	template<typename Registry>
 	class ComponentDependency
 	{
 	private:
@@ -76,6 +100,35 @@ namespace ECS
 		static void DependsOn(Registry& reg)
 		{
 			DependsOn0<Component>(0, reg);
+		}
+	};
+
+	template<typename Registry>
+	class ComponentReference
+	{
+	private:
+		template<typename Component, typename = decltype(&Component::Reference<Component>)>
+		static void Resolve0(int, Registry & reg, const std::vector<typename Registry::entity_type> & srcs, const std::vector<typename Registry::entity_type> & dsts)
+		{
+			Reference<Registry>::map_type map;
+			for (auto srcitr = srcs.begin(), dstitr = dsts.begin(); srcitr != srcs.end() && dstitr != dsts.end(); ++srcitr, ++dstitr)
+				map.insert(std::make_pair(*srcitr, *dstitr));
+			Reference<Registry> ref(reg, map);
+			reg.view<Component>().each([&](auto entity, auto& component) {
+				component.Reference(ref);
+				});
+		}
+
+		template<typename Component>
+		static void Resolve0(bool, Registry& reg, const std::vector<typename Registry::entity_type>& srcs, const std::vector<typename Registry::entity_type>& dsts)
+		{
+		}
+
+	public:
+		template<typename Component>
+		static void Resolve(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, const std::vector<typename Registry::entity_type>& dsts)
+		{
+			Resolve0<Component>(0, reg, srcs, dsts);
 		}
 	};
 
@@ -202,6 +255,12 @@ namespace ECS
 			ComponentDependency<Registry>::DependsOn<Component>(reg);
 		}
 
+		template<typename Registry, typename Component>
+		static void UpdateReference(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, const std::vector<typename Registry::entity_type>& dsts)
+		{
+			ComponentReference<Registry>::Resolve<Component>(reg, srcs, dsts);
+		}
+
 	public:
 		static void InitializeEvents()
 		{
@@ -235,9 +294,17 @@ namespace ECS
 		}
 
 		template<typename Registry>
+		static void UpdateReferences(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, const std::vector<typename Registry::entity_type>& dsts)
+		{
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (UpdateReference<Registry, Components>(reg, srcs, dsts), 0)... };
+			(void)accumulator;
+		}
+
+		template<typename Registry>
 		static void CloneComponents(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, const std::vector<typename Registry::entity_type>& dsts)
 		{
-			ComponentClone<Registry>::Clone(reg, srcs, dsts);
+			ComponentClone<Registry>::Clone<Components...>(reg, srcs, dsts);
 		}
 
 		template<typename Registry>
