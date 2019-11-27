@@ -240,12 +240,11 @@ namespace Widgets
 
 		if (ImGui::Button("New"))
 		{
-			auto prev = e;
 			auto e0 = reg.create();
 			Transform t;
-			if (reg.valid(prev))
+			if (reg.valid(e))
 			{
-				auto parent = reg.has<Transform>(prev) ? reg.get<Transform>(prev).parent : entt::null;
+				auto parent = reg.has<Transform>(e) ? reg.get<Transform>(e).parent : entt::null;
 				if (reg.valid(parent))
 					t.parent = parent;
 			}
@@ -267,11 +266,10 @@ namespace Widgets
 		}
 		if (ImGui::Button("New Child"))
 		{
-			auto prev = e;
 			auto e0 = reg.create();
 			Transform t;
-			if (reg.valid(prev))
-				t.parent = prev;
+			if (reg.valid(e))
+				t.parent = e;
 			reg.assign<Transform>(e0, std::move(t));
 			if (!ImGui::GetIO().KeyShift)
 				e = e0;
@@ -279,26 +277,25 @@ namespace Widgets
 		ImGui::SameLine();
 		if (ImGui::Button("Duplicate"))
 		{
-			auto prev = e;
-			if (reg.valid(prev))
+			if (reg.valid(e))
 			{
 				std::vector<entt::entity> src;
 				std::vector<entt::entity> dst;
 				auto rec0 = [&](auto& e, auto& rec) mutable -> void {
+					src.push_back(e);
 					reg.view<Transform>().each([&](auto entity, Transform& component) {
 						if (component.parent == e)
 							rec(entity, rec);
 						});
-					src.push_back(e);
-					dst.push_back(reg.create());
 				};
 				rec0(e, rec0);
 
 				Components::CloneComponents(reg, src, dst);
 				Components::UpdateReferences(reg, src, dst);
 
+				auto& e0 = *dst.begin();
 				if (!ImGui::GetIO().KeyShift)
-					e = *(dst.end() - 1);
+					e = e0;
 			}
 		}
 		if (ImGui::Button("Export"))
@@ -306,7 +303,17 @@ namespace Widgets
 			std::string location;
 			if (WindowsUtils::SaveDialog("prefab.json", "Prefab Files", location))
 			{
-				Components::SaveEntity(location, reg, e);
+				std::vector<entt::entity> src;
+				auto rec0 = [&](auto& e, auto& rec) mutable -> void {
+					src.push_back(e);
+					reg.view<Transform>().each([&](auto entity, Transform& component) {
+						if (component.parent == e)
+							rec(entity, rec);
+						});
+				};
+				rec0(e, rec0);
+
+				Components::SaveEntity(location, reg, src);
 			}
 		}
 		ImGui::SameLine();
@@ -315,12 +322,13 @@ namespace Widgets
 			std::string location;
 			if (WindowsUtils::OpenDialog("prefab.json", "Prefab Files", location))
 			{
-				auto prev = e;
-				auto e0 = reg.create();
-				Components::LoadEntity(location, reg, e0);
-				auto& t = reg.get_or_assign<Transform>(e0);
-				if (reg.valid(prev))
-					t.parent = prev;
+				std::vector<entt::entity> src;
+				std::vector<entt::entity> dst;
+
+				Components::LoadEntity(location, reg, src, dst);
+				Components::UpdateReferences(reg, src, dst);
+
+				auto& e0 = *dst.begin();
 				if (!ImGui::GetIO().KeyShift)
 					e = e0;
 			}

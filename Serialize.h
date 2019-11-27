@@ -576,18 +576,28 @@ namespace ECS
 		}
 
 		template<typename... Components>
-		void components(const Registry& reg, const std::vector<typename Registry::entity_type>& entities)
+		void components(const Registry& reg, const std::vector<typename Registry::entity_type>& srcs)
 		{
-			archive.setNextName("objects");
-			archive.startNode();
-			archive.makeArray();
-			for (auto& entity : entities)
 			{
+				archive.setNextName("entities");
 				archive.startNode();
-				component<Components...>(reg, entity);
+				{
+					archive(cereal::make_nvp("created", srcs));
+				}
 				archive.finishNode();
 			}
-			archive.finishNode();
+			{
+				archive.setNextName("objects");
+				archive.startNode();
+				archive.makeArray();
+				for (auto& entity : srcs)
+				{
+					archive.startNode();
+					component<Components...>(reg, entity);
+					archive.finishNode();
+				}
+				archive.finishNode();
+			}
 		}
 	};
 
@@ -618,26 +628,41 @@ namespace ECS
 
 	public:
 		template<typename... Components>
-		void component(Registry& reg, typename Registry::entity_type entity)
+		void component(Registry& reg, typename Registry::entity_type& entity)
 		{
+			entity = reg.create();
 			using accumulator_type = int[];
 			accumulator_type accumulator = { 0, (component0<Components>(reg, entity), 0)... };
 			(void)accumulator;
 		}
 
 		template<typename... Components>
-		void components(Registry& reg, const std::vector<typename Registry::entity_type>& entities)
+		void components(Registry& reg, std::vector<typename Registry::entity_type>& srcs, std::vector<typename Registry::entity_type>& dsts)
 		{
-			archive.setNextName("objects");
-			archive.startNode();
-			//archive.makeArray();
-			for (auto& entity : entities)
 			{
+				archive.setNextName("entities");
 				archive.startNode();
-				component<Components...>(reg, entity);
+				{
+					archive(cereal::make_nvp("created", srcs));
+				}
 				archive.finishNode();
 			}
-			archive.finishNode();
+			{
+				archive.setNextName("objects");
+				archive.startNode();
+				//archive.makeArray();
+				cereal::size_type size;
+				archive.loadSize(size);
+				for (cereal::size_type i = 0; i < size; i++)
+				{
+					archive.startNode();
+					typename Registry::entity_type entity;
+					component<Components...>(reg, entity);
+					dsts.push_back(entity);
+					archive.finishNode();
+				}
+				archive.finishNode();
+			}
 		}
 	};
 
@@ -646,7 +671,7 @@ namespace ECS
 	{
 	public:
 		template<typename... Components>
-		static void Clone(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type dst)
+		static void Clone(Registry& reg, typename Registry::entity_type src, typename Registry::entity_type& dst)
 		{
 			std::stringstream buffer;
 			{
@@ -662,18 +687,20 @@ namespace ECS
 		}
 
 		template<typename... Components>
-		static void Clone(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, const std::vector<typename Registry::entity_type>& dsts)
+		static void Clone(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, std::vector<typename Registry::entity_type>& dsts)
 		{
+			std::vector<typename Registry::entity_type> srcsResult;
 			std::stringstream buffer;
 			{
 				cereal::JSONOutputArchive archive(buffer);
 				EntityExporter<Registry> serializer(archive);
 				serializer.components<Components...>(reg, srcs);
 			}
+			std::cout << buffer.str() << std::endl;
 			{
 				cereal::JSONInputArchive archive(buffer);
 				EntityImporter<Registry> serializer(archive);
-				serializer.components<Components...>(reg, dsts);
+				serializer.components<Components...>(reg, srcsResult, dsts);
 			}
 		}
 	};

@@ -56,7 +56,7 @@ namespace ECS
 	};
 
 	template<typename Registry>
-	class Reference
+	class ReferenceResolver
 	{
 	public:
 		using map_type = std::unordered_map<typename Registry::entity_type, typename Registry::entity_type>;
@@ -66,7 +66,7 @@ namespace ECS
 		const map_type& map;
 
 	public:
-		Reference(Registry& registry, const map_type& map)
+		ReferenceResolver(Registry& registry, const map_type& map)
 			: registry(registry)
 			, map(map)
 		{
@@ -112,10 +112,10 @@ namespace ECS
 		template<typename Component, typename = decltype(&Component::Reference<Component>)>
 		static void Resolve0(int, Registry & reg, const std::vector<typename Registry::entity_type> & srcs, const std::vector<typename Registry::entity_type> & dsts)
 		{
-			Reference<Registry>::map_type map;
+			ReferenceResolver<Registry>::map_type map;
 			for (auto srcitr = srcs.begin(), dstitr = dsts.begin(); srcitr != srcs.end() && dstitr != dsts.end(); ++srcitr, ++dstitr)
 				map.insert(std::make_pair(*srcitr, *dstitr));
-			Reference<Registry> ref(reg, map);
+			ReferenceResolver<Registry> ref(reg, map);
 			for (auto& dst : dsts)
 				if (reg.has<Component>(dst))
 					reg.get<Component>(dst).Reference(ref);
@@ -304,7 +304,7 @@ namespace ECS
 		}
 
 		template<typename Registry>
-		static void CloneComponents(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, const std::vector<typename Registry::entity_type>& dsts)
+		static void CloneComponents(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, std::vector<typename Registry::entity_type>& dsts)
 		{
 			ComponentClone<Registry>::Clone<Components...>(reg, srcs, dsts);
 		}
@@ -324,21 +324,16 @@ namespace ECS
 		}
 
 		template<typename Registry>
-		static bool LoadEntity(const std::string& location, Registry& scene, typename Registry::entity_type entity)
+		static bool LoadEntity(const std::string& location, Registry& scene, std::vector<typename Registry::entity_type>& srcs, std::vector<typename Registry::entity_type>& dsts)
 		{
 			std::ifstream storage(location);
 			if (storage)
 			{
 				try
 				{
-					cereal::JSONInputArchive archive{ storage };
-					EntityImporter<Registry> earchive(archive);
-					{
-						archive.setNextName("components");
-						archive.startNode();
-						earchive.component<Components...>(scene, entity);
-						archive.finishNode();
-					}
+					cereal::JSONInputArchive archive(storage);
+					EntityImporter<Registry> serializer(archive);
+					serializer.components<Components...>(scene, srcs, dsts);
 					return true;
 				}
 				catch (cereal::Exception e)
@@ -350,21 +345,16 @@ namespace ECS
 		}
 
 		template<typename Registry>
-		static bool SaveEntity(const std::string& location, const Registry& scene, typename Registry::entity_type entity)
+		static bool SaveEntity(const std::string& location, const Registry& scene, const std::vector<typename Registry::entity_type>& srcs)
 		{
 			std::ofstream storage(location);
 			if (storage)
 			{
 				try
 				{
-					cereal::JSONOutputArchive archive{ storage };
-					EntityExporter<Registry> earchive(archive);
-					{
-						archive.setNextName("components");
-						archive.startNode();
-						earchive.component<Components...>(scene, entity);
-						archive.finishNode();
-					}
+					cereal::JSONOutputArchive archive(storage);
+					EntityExporter<Registry> serializer(archive);
+					serializer.components<Components...>(scene, srcs);
 					return true;
 				}
 				catch (cereal::Exception)
