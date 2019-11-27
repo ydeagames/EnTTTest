@@ -89,12 +89,20 @@ void Transform::EditorGui(GameContext& ctx, GameObject& entity)
 		auto& e = t.parent;
 		int iid = (e == entt::null) ? -1 : int(reg.entity(e));
 		ImGui::InputInt("Parent##Transform", &iid);
+
 		if (iid < 0)
 			e = entt::null;
 		else
 		{
 			auto id = entt::entity(iid);
 			e = id < reg.size() ? (id | reg.current(id) << entt::entt_traits<entt::entity>::entity_shift) : id;
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("DND_Hierarchy"))
+				e = *(static_cast<const entt::entity*>(payload->Data));
+			ImGui::EndDragDropTarget();
 		}
 	}
 

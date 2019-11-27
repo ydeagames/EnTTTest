@@ -8,7 +8,8 @@ namespace Widgets
 	class EntityEditorState
 	{
 	public:
-		entt::entity current;
+		entt::entity prev = entt::null;
+		entt::entity current = entt::null;
 	};
 
 	void Hierarchy(GameContext& ctx, Scene& scene);

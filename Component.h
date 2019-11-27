@@ -75,7 +75,9 @@ namespace ECS
 	public:
 		typename Registry::entity_type& operator()(typename Registry::entity_type& ref)
 		{
-			return ref = map[ref];
+			if (map.find(ref) != map.end())
+				ref = map.at(ref);
+			return ref;
 		}
 	};
 
@@ -114,9 +116,9 @@ namespace ECS
 			for (auto srcitr = srcs.begin(), dstitr = dsts.begin(); srcitr != srcs.end() && dstitr != dsts.end(); ++srcitr, ++dstitr)
 				map.insert(std::make_pair(*srcitr, *dstitr));
 			Reference<Registry> ref(reg, map);
-			reg.view<Component>().each([&](auto entity, auto& component) {
-				component.Reference(ref);
-				});
+			for (auto& dst : dsts)
+				if (reg.has<Component>(dst))
+					reg.get<Component>(dst).Reference(ref);
 		}
 
 		template<typename Component>

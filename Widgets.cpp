@@ -28,6 +28,7 @@ namespace Widgets
 
 		auto& reg = scene.registry;
 		auto& editorState = ctx.Get<EntityEditorState>();
+		auto& e0 = editorState.prev;
 		auto& e = editorState.current;
 
 		//std::unordered_set<entt::entity> checknodes;
@@ -124,11 +125,13 @@ namespace Widgets
 
 							if (ImGui::IsItemClicked())
 							{
+								e0 = e;
 								e = node.id;
 							}
 
 							if (ImGui::BeginDragDropSource())
 							{
+								e = e0;
 								ImGui::SetDragDropPayload("DND_Hierarchy", &node.id, sizeof(entt::entity));
 								ImGui::Text(node.name.c_str());
 								ImGui::EndDragDropSource();
