@@ -187,7 +187,9 @@
     <ClInclude Include="Components.h" />
     <ClInclude Include="EventBus.h" />
     <ClInclude Include="GameContext.h" />
+    <ClInclude Include="GameContext2.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="ServiceLocator.h" />
     <ClInclude Include="Widgets.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="ImGuiStyles.h" />
@@ -214,6 +216,7 @@
     <ClCompile Include="Components.cpp" />
     <ClCompile Include="DeviceResources.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameContext.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Widgets.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />

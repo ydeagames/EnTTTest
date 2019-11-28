@@ -6,13 +6,13 @@ using namespace DirectX::SimpleMath;
 
 void PrimitiveRenderer::RenderStart(GameContext& ctx, GameObject& entity)
 {
-	m_model = GeometricPrimitive::CreateTeapot(ctx.dr->GetD3DDeviceContext());
+	m_model = GeometricPrimitive::CreateTeapot(GameContext::Get<DX::DeviceResources>().GetD3DDeviceContext());
 }
 
 void PrimitiveRenderer::Render(GameContext& ctx, GameObject& entity)
 {
 	if (m_model)
-		m_model->Draw(entity.GetComponent<Transform>().GetMatrix(), ctx.view, ctx.projection);
+		m_model->Draw(entity.GetComponent<Transform>().GetMatrix(), GameContext::Get<Camera>().view, GameContext::Get<Camera>().projection);
 }
 
 void MoveUpdater::Start(GameContext& ctx, GameObject& entity)

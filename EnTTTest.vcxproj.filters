@@ -155,6 +155,8 @@
       <Filter>GUI</Filter>
     </ClInclude>
     <ClInclude Include="WindowsUtils.h" />
+    <ClInclude Include="GameContext2.h" />
+    <ClInclude Include="ServiceLocator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -183,6 +185,9 @@
       <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="WindowsUtils.cpp" />
+    <ClCompile Include="GameContext.cpp">
+      <Filter>ECS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

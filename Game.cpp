@@ -15,10 +15,10 @@ using Microsoft::WRL::ComPtr;
 Game::Game() noexcept(false)
 	: m_myGame(&m_context)
 {
-	m_context.Register<DX::DeviceResources>();
+	GameContext::Register<DX::DeviceResources>();
     m_deviceResources = &m_context.Get<DX::DeviceResources>();
     m_deviceResources->RegisterDeviceNotify(this);
-	m_context.dr = m_deviceResources;
+	GameContext::Register<Camera>();
 }
 
 // Initialize the Direct3D resources required to run.
@@ -184,7 +184,7 @@ void Game::CreateWindowSizeDependentResources()
 {
     // TODO: Initialize windows-size dependent objects here.
 
-	m_context.view = DirectX::SimpleMath::Matrix::CreateLookAt(
+	GameContext::Get<Camera>().view = DirectX::SimpleMath::Matrix::CreateLookAt(
 		DirectX::SimpleMath::Vector3(0, 5, 5),
 		DirectX::SimpleMath::Vector3(0, 0, 0),
 		DirectX::SimpleMath::Vector3::Up
@@ -197,7 +197,7 @@ void Game::CreateWindowSizeDependentResources()
 	// âÊäpÇê›íË
 	float fovAngleY = XMConvertToRadians(70.0f);
 	// éÀâeçsóÒÇçÏê¨Ç∑ÇÈ
-	m_context.projection = SimpleMath::Matrix::CreatePerspectiveFieldOfView(
+	GameContext::Get<Camera>().projection = SimpleMath::Matrix::CreatePerspectiveFieldOfView(
 		fovAngleY,
 		aspectRatio,
 		0.01f,

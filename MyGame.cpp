@@ -5,6 +5,7 @@
 #include "AllComponents.h"
 #include "ImGuiManager.h"
 #include "Widgets.h"
+#include "GameContext2.h"
 
 int MyGame::Bench()
 {
@@ -27,6 +28,31 @@ int MyGame::Bench()
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 	std::cout << "Finish in " << duration / 1'000'000.f << " (" << duration / (float)count << "ƒÊs)" << std::endl;
 	*/
+	{
+		GameContext2::Register<Camera>(std::make_unique<Camera>());
+		std::cout << "Performance Test" << std::endl;
+		auto t1 = std::chrono::high_resolution_clock::now();
+		constexpr long count = 100'000L;
+		for (long i = 0; i < count; i++)
+		{
+			auto camera = GameContext2::Get<Camera>();
+		}
+		auto t2 = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+		std::cout << "Finish in " << duration / 1'000'000.f << " (" << duration / (float)count << "ƒÊs)" << std::endl;
+	}
+	{
+		std::cout << "Performance Test" << std::endl;
+		auto t1 = std::chrono::high_resolution_clock::now();
+		constexpr long count = 100'000L;
+		for (long i = 0; i < count; i++)
+		{
+			auto& camera = GameContext::Get<Camera>();
+		}
+		auto t2 = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+		std::cout << "Finish in " << duration / 1'000'000.f << " (" << duration / (float)count << "ƒÊs)" << std::endl;
+	}
 	return 0;
 }
 
