@@ -139,27 +139,26 @@ namespace ECS
 	{
 	private:
 		template<typename Component, typename = decltype(&Component::EditorGui)>
-		static void EditorWidget0(int, GameContext & ctx, Registry & reg, MM::ImGuiEntityEditor<Registry> & editor)
+		static void EditorWidget0(int, Registry & reg, MM::ImGuiEntityEditor<Registry> & editor)
 		{
-			auto* ctxptr = &ctx;
 			editor.registerComponentWidgetFn(
 				reg.type<Component>(),
-				[ctxptr](auto& reg, auto entity) {
+				[](auto& reg, auto entity) {
 					GameObject o{ &reg, entity };
-					reg.get<Component>(entity).EditorGui(*ctxptr, o);
+					reg.get<Component>(entity).EditorGui(o);
 				});
 		}
 
 		template<typename Component>
-		static void EditorWidget0(bool, GameContext& ctx, Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
+		static void EditorWidget0(bool, Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
 		{
 		}
 
 	public:
 		template<typename Component>
-		static void EditorWidget(GameContext& ctx, Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
+		static void EditorWidget(Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
 		{
-			EditorWidget0<Component>(0, ctx, reg, editor);
+			EditorWidget0<Component>(0, reg, editor);
 		}
 	};
 
@@ -168,7 +167,7 @@ namespace ECS
 	{
 	private:
 		template<typename Component, typename = decltype(&Component::Awake)>
-		static void Awake0(int, GameContext & ctx, Registry & registry)
+		static void Awake0(int, Registry & registry)
 		{
 			class Creation
 			{
@@ -186,12 +185,12 @@ namespace ECS
 		}
 
 		template<typename Component>
-		static void Awake0(bool, GameContext& ctx, Registry& reg)
+		static void Awake0(bool, Registry& reg)
 		{
 		}
 
 		template<typename Component, typename = decltype(&Component::Destroy)>
-		static void Destroy0(int, GameContext & ctx, Registry & registry)
+		static void Destroy0(int, Registry & registry)
 		{
 			class Deletion
 			{
@@ -209,16 +208,16 @@ namespace ECS
 		}
 
 		template<typename Component>
-		static void Destroy0(bool, GameContext& ctx, Registry& reg)
+		static void Destroy0(bool, Registry& reg)
 		{
 		}
 
 	public:
 		template<typename Component>
-		static void Lifecycle(GameContext& ctx, Registry& reg)
+		static void Lifecycle(Registry& reg)
 		{
-			Awake0<Component>(0, ctx, reg);
-			Destroy0<Component>(0, ctx, reg);
+			Awake0<Component>(0, reg);
+			Destroy0<Component>(0, reg);
 		}
 	};
 
@@ -239,10 +238,10 @@ namespace ECS
 		}
 
 		template<typename Registry, typename Component>
-		static void InitializeEditorComponent(GameContext& ctx, Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
+		static void InitializeEditorComponent(Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
 		{
 			editor.registerTrivial<Component>(reg, ECS::IdentifierResolver::name<Component>());
-			ComponentGui<Registry>::EditorWidget<Component>(ctx, reg, editor);
+			ComponentGui<Registry>::EditorWidget<Component>(reg, editor);
 		}
 
 		template<typename Registry, typename Component>
@@ -272,10 +271,10 @@ namespace ECS
 		}
 
 		template<typename Registry>
-		static void InitializeEditorComponents(GameContext& ctx, Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
+		static void InitializeEditorComponents(Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
 		{
 			using accumulator_type = int[];
-			accumulator_type accumulator = { 0, (InitializeEditorComponent<Registry, Components>(ctx, reg, editor), 0)... };
+			accumulator_type accumulator = { 0, (InitializeEditorComponent<Registry, Components>(reg, editor), 0)... };
 			(void)accumulator;
 		}
 

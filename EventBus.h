@@ -6,14 +6,14 @@ class GameContext;
 
 namespace ECS
 {
-	template<typename Events, uint64_t... meta>
+	template<typename Events, uint64_t meta = 0, typename... Args>
 	class EventBus
 	{
 	private:
 		template<typename T>
 		struct started_t {};
 
-		using Func = void(GameContext& ctx, Scene& registry);
+		using Func = void(Scene& registry, Args&&... args);
 		static std::vector<std::function<Func>>& handlers()
 		{
 			static std::vector<std::function<Func>> value;
@@ -21,32 +21,30 @@ namespace ECS
 		}
 
 		template<typename T, typename F>
-		static int RegisterCustomOnce(F f)
+		static void RegisterCustomOnce(F f)
 		{
-			handlers().push_back([f](GameContext& ctx, Scene& registry) {
-				registry.registry.view<T>().each([f, &ctx, &registry](auto& entity, T& comp) {
+			handlers().push_back([f](Scene& registry, auto&& ... args) {
+				registry.registry.view<T>().each([f, &registry, &args](auto& entity, T& comp) {
 					GameObject o{ &registry.registry, entity };
-					f(ctx, o, comp);
+					f(o, comp, std::forward<Args>(args)...);
 					});
 				});
-			return 0;
 		}
 
 		template<typename T, typename... F>
-		static int RegisterOnce(F&& ... f)
+		static void RegisterOnce(F&& ... f)
 		{
-			RegisterCustomOnce<T>([f...](auto& ctx, auto& o, T& comp) {
+			RegisterCustomOnce<T>([f...](auto& o, T& comp, auto&& ... args) {
 				using accumulator_type = int[];
-				accumulator_type accumulator = { 0, ((comp.*f)(ctx, o), 0)... };
+				accumulator_type accumulator = { 0, ((comp.*f)(o, args...), 0)... };
 				(void)accumulator;
 			});
-			return 0;
 		}
 
 		template<typename T, typename... F>
-		static int RegisterFirstOnce(F&& ... f)
+		static void RegisterFirstOnce(F&& ... f)
 		{
-			RegisterCustomOnce<T>([f...](auto& ctx, auto& o, T& comp) {
+			RegisterCustomOnce<T>([f...](auto& o, T& comp, auto&& ... args) {
 				if (!o.registry->has<started_t<T>>(o.entity))
 				{
 					struct Listener
@@ -60,37 +58,36 @@ namespace ECS
 					registry.destruction<T>().connect<Listener, & Listener::on>(&listener);
 					registry.assign<started_t<T>>(o.entity);
 					using accumulator_type = int[];
-					accumulator_type accumulator = { 0, ((comp.*f)(ctx, o), 0)... };
+					accumulator_type accumulator = { 0, ((comp.*f)(o, args...), 0)... };
 					(void)accumulator;
 				}
 			});
-			return 0;
 		}
 
 	public:
-		static void Post(GameContext& ctx, Scene& registry)
+		static void Post(Scene& registry, Args&& ... args)
 		{
 			for (auto& func : handlers())
-				func(ctx, registry);
+				func(registry, std::forward<Args>(args)...);
 		}
 
 	public:
 		template<typename T, typename F>
 		static void Register(F f)
 		{
-			static int once = RegisterOnce<T>(f);
+			static int once = (RegisterOnce<T>(f), 0);
 		}
 
 		template<typename T, typename F>
 		static void RegisterCustom(F f)
 		{
-			static int once = RegisterCustomOnce<T>(f);
+			static int once = (RegisterCustomOnce<T>(f), 0);
 		}
 
 		template<typename T, typename F>
 		static void RegisterFirst(F f)
 		{
-			static int once = RegisterFirstOnce<T>(f);
+			static int once = (RegisterFirstOnce<T>(f), 0);
 		}
 	};
 }

@@ -57,7 +57,7 @@ public:
 		ref(parent);
 	}
 
-	void EditorGui(GameContext& ctx, GameObject& entity);
+	void EditorGui(GameObject& entity);
 };
 
 class MoveUpdater
@@ -75,8 +75,8 @@ public:
 	DirectX::SimpleMath::Vector3 vel;
 
 public:
-	void Start(GameContext& ctx, GameObject& entity);
-	void Update(GameContext& ctx, GameObject& entity);
+	void Start(GameObject& entity);
+	void Update(GameObject& entity);
 
 public:
 	template<class Archive>
@@ -97,7 +97,7 @@ public:
 	}
 
 public:
-	void Update(GameContext& ctx, GameObject& entity);
+	void Update(GameObject& entity);
 
 public:
 	template<class Archive>
@@ -121,8 +121,8 @@ public:
 	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
 
 public:
-	void RenderStart(GameContext& ctx, GameObject& entity);
-	void Render(GameContext& ctx, GameObject& entity);
+	void RenderStart(GameObject& entity);
+	void Render(GameObject& entity, Camera& camera);
 
 public:
 	template<class Archive>

@@ -11,13 +11,13 @@ ImGuiManager::~ImGuiManager()
 {
 }
 
-void ImGuiManager::RenderInitialize(GameContext& context)
+void ImGuiManager::RenderInitialize()
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	//auto wpath = context.GetSaveHandler().GetDir() + L"GuiSettings.ini";
+	//auto wpath = GameContext::GetSaveHandler().GetDir() + L"GuiSettings.ini";
 	//m_settingFile = std::string(wpath.begin(), wpath.end());
 	//io.IniFilename = m_settingFile.c_str();
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
@@ -34,8 +34,8 @@ void ImGuiManager::RenderInitialize(GameContext& context)
 	}
 
 	// Setup Platform/Renderer bindings
-	ImGui_ImplWin32_Init(context.Get<HWND>());
-	ImGui_ImplDX11_Init(context.Get<DX::DeviceResources>().GetD3DDevice(), context.Get<DX::DeviceResources>().GetD3DDeviceContext());
+	ImGui_ImplWin32_Init(GameContext::Get<HWND>());
+	ImGui_ImplDX11_Init(GameContext::Get<DX::DeviceResources>().GetD3DDevice(), GameContext::Get<DX::DeviceResources>().GetD3DDeviceContext());
 
 	// Load Fonts
 	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -53,7 +53,7 @@ void ImGuiManager::RenderInitialize(GameContext& context)
 	io.Fonts->AddFontDefault();
 }
 
-void ImGuiManager::Begin(GameContext& context)
+void ImGuiManager::Begin()
 {
 	// Start the Dear ImGui frame
 	{
@@ -68,7 +68,7 @@ void ImGuiManager::Begin(GameContext& context)
 	}
 }
 
-void ImGuiManager::End(GameContext& context)
+void ImGuiManager::End()
 {
 	// Rendering
 	{
@@ -77,7 +77,7 @@ void ImGuiManager::End(GameContext& context)
 	}
 }
 
-void ImGuiManager::RenderFinalize(GameContext& context)
+void ImGuiManager::RenderFinalize()
 {
 	// Cleanup
 	ImGui_ImplDX11_Shutdown();

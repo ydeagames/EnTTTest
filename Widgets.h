@@ -12,14 +12,14 @@ namespace Widgets
 		entt::entity current = entt::null;
 	};
 
-	void Hierarchy(GameContext& ctx, Scene& scene);
-	void Inspector(GameContext& ctx, Scene& scene);
-	void SceneControl(GameContext& ctx, Scene& scene);
-	void EntityControl(GameContext& ctx, Scene& scene);
+	void Hierarchy(Scene& scene);
+	void Inspector(Scene& scene);
+	void SceneControl(Scene& scene);
+	void EntityControl(Scene& scene);
 
 	namespace AllWidgets
 	{
-		void Initialize(GameContext& ctx, Scene& scene);
-		void Render(GameContext& ctx, Scene& scene);
+		void Initialize(Scene& scene);
+		void Render(Scene& scene);
 	}
 };

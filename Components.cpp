@@ -4,28 +4,28 @@
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
-void PrimitiveRenderer::RenderStart(GameContext& ctx, GameObject& entity)
+void PrimitiveRenderer::RenderStart(GameObject& entity)
 {
 	m_model = GeometricPrimitive::CreateTeapot(GameContext::Get<DX::DeviceResources>().GetD3DDeviceContext());
 }
 
-void PrimitiveRenderer::Render(GameContext& ctx, GameObject& entity)
+void PrimitiveRenderer::Render(GameObject& entity, Camera& camera)
 {
 	if (m_model)
-		m_model->Draw(entity.GetComponent<Transform>().GetMatrix(), GameContext::Get<Camera>().view, GameContext::Get<Camera>().projection);
+		m_model->Draw(entity.GetComponent<Transform>().GetMatrix(), camera.view, camera.projection);
 }
 
-void MoveUpdater::Start(GameContext& ctx, GameObject& entity)
+void MoveUpdater::Start(GameObject& entity)
 {
 	vel += DirectX::SimpleMath::Vector3::Right * .1f;
 }
 
-void MoveUpdater::Update(GameContext& ctx, GameObject& entity)
+void MoveUpdater::Update(GameObject& entity)
 {
 	entity.GetComponent<Transform>().position += vel;
 }
 
-void MoveDownUpdater::Update(GameContext& ctx, GameObject& entity)
+void MoveDownUpdater::Update(GameObject& entity)
 {
 	entity.GetComponent<Transform>().position.y -= .1f;
 }
@@ -75,7 +75,7 @@ namespace
 	}
 }
 
-void Transform::EditorGui(GameContext& ctx, GameObject& entity)
+void Transform::EditorGui(GameObject& entity)
 {
 	auto& t = *this;
 	auto& reg = *entity.registry;

@@ -1,6 +1,8 @@
 #pragma once
 #include "EventBus.h"
 
+class Camera;
+
 class Updatable
 {
 private:
@@ -15,7 +17,7 @@ private:
 	template<typename T, typename = decltype(&T::Update)>
 	static void RegisterTick()
 	{
-		ECS::EventBus<Updatable>::Register<T>(&T::Update);
+		ECS::EventBus<Updatable, 1>::Register<T>(&T::Update);
 	}
 
 public:
@@ -26,10 +28,10 @@ public:
 		RegisterTick<T>();
 	}
 
-	static void Update(GameContext& ctx, Scene& registry)
+	static void Update(Scene& registry)
 	{
-		ECS::EventBus<Updatable, 0>::Post(ctx, registry);
-		ECS::EventBus<Updatable>::Post(ctx, registry);
+		ECS::EventBus<Updatable, 0>::Post(registry);
+		ECS::EventBus<Updatable, 1>::Post(registry);
 	}
 };
 
@@ -47,7 +49,7 @@ private:
 	template<typename T, typename = decltype(&T::Render)>
 	static void RegisterTick()
 	{
-		ECS::EventBus<Renderable>::Register<T>(&T::Render);
+		ECS::EventBus<Renderable, 1, Camera>::Register<T>(&T::Render);
 	}
 
 public:
@@ -58,19 +60,19 @@ public:
 		RegisterTick<T>();
 	}
 
-	static void RenderInitialize(GameContext& ctx, Scene& registry)
+	static void RenderInitialize(Scene& registry)
 	{
-		//ECS::EventBus<Renderable, 0>::Post(ctx, registry);
+		//ECS::EventBus<Renderable, 0>::Post(registry);
 	}
 
-	static void Render(GameContext& ctx, Scene& registry)
+	static void Render(Scene& registry, Camera&& camera)
 	{
-		ECS::EventBus<Renderable, 0>::Post(ctx, registry);
-		ECS::EventBus<Renderable>::Post(ctx, registry);
+		ECS::EventBus<Renderable, 0>::Post(registry);
+		ECS::EventBus<Renderable, 1, Camera>::Post(registry, std::forward<Camera>(camera));
 	}
 
-	static void RenderFinalize(GameContext& ctx, Scene& registry)
+	static void RenderFinalize(Scene& registry)
 	{
-		//ECS::EventBus<Renderable, 1>::Post(ctx, registry);
+		//ECS::EventBus<Renderable, 1>::Post(registry);
 	}
 };

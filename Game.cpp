@@ -13,19 +13,20 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
 Game::Game() noexcept(false)
-	: m_myGame(&m_context)
 {
 	GameContext::Register<DX::DeviceResources>();
-    m_deviceResources = &m_context.Get<DX::DeviceResources>();
+    m_deviceResources = &GameContext::Get<DX::DeviceResources>();
     m_deviceResources->RegisterDeviceNotify(this);
-	GameContext::Register<Camera>();
 }
 
 // Initialize the Direct3D resources required to run.
 void Game::Initialize(HWND window, int width, int height)
 {
     m_deviceResources->SetWindow(window, width, height);
-	m_context.Register<HWND>(window);
+	GameContext::Register<HWND>(window);
+
+	m_mainCamera = std::make_unique<Camera>();
+	m_myGame = std::make_unique<MyGame>();
 
     m_deviceResources->CreateDeviceResources();
     CreateDeviceDependentResources();
@@ -43,7 +44,7 @@ void Game::Initialize(HWND window, int width, int height)
 
 void Game::Finalize()
 {
-	m_myGame.RenderFinalize();
+	m_myGame->RenderFinalize();
 }
 
 #pragma region Frame Update
@@ -66,7 +67,7 @@ void Game::Update(DX::StepTimer const& timer)
     // TODO: Add your game logic here.
     elapsedTime;
 
-	m_myGame.Update();
+	m_myGame->Update();
 }
 #pragma endregion
 
@@ -88,7 +89,7 @@ void Game::Render()
     // TODO: Add your rendering code here.
     context;
 
-	m_myGame.Render();
+	m_myGame->Render(*m_mainCamera);
 
     m_deviceResources->PIXEndEvent();
 
@@ -176,7 +177,7 @@ void Game::CreateDeviceDependentResources()
     // TODO: Initialize device dependent objects here (independent of window size).
     device;
 
-	m_myGame.RenderInitialize();
+	m_myGame->RenderInitialize();
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -184,7 +185,7 @@ void Game::CreateWindowSizeDependentResources()
 {
     // TODO: Initialize windows-size dependent objects here.
 
-	GameContext::Get<Camera>().view = DirectX::SimpleMath::Matrix::CreateLookAt(
+	m_mainCamera->view = DirectX::SimpleMath::Matrix::CreateLookAt(
 		DirectX::SimpleMath::Vector3(0, 5, 5),
 		DirectX::SimpleMath::Vector3(0, 0, 0),
 		DirectX::SimpleMath::Vector3::Up
@@ -197,7 +198,7 @@ void Game::CreateWindowSizeDependentResources()
 	// âÊäpÇê›íË
 	float fovAngleY = XMConvertToRadians(70.0f);
 	// éÀâeçsóÒÇçÏê¨Ç∑ÇÈ
-	GameContext::Get<Camera>().projection = SimpleMath::Matrix::CreatePerspectiveFieldOfView(
+	m_mainCamera->projection = SimpleMath::Matrix::CreatePerspectiveFieldOfView(
 		fovAngleY,
 		aspectRatio,
 		0.01f,
@@ -209,7 +210,7 @@ void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
 
-	m_myGame.RenderFinalize();
+	m_myGame->RenderFinalize();
 }
 
 void Game::OnDeviceRestored()

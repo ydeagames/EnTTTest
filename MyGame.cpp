@@ -23,8 +23,7 @@ int MyGame::Bench()
 	return 0;
 }
 
-MyGame::MyGame(GameContext* context)
-	: m_context(context)
+MyGame::MyGame()
 {
 	Components::InitializeEvents();
 
@@ -34,60 +33,60 @@ MyGame::MyGame(GameContext* context)
 	m_scene.Load();
 
 	// Widgets
-	Widgets::AllWidgets::Initialize(*m_context, m_scene);
+	Widgets::AllWidgets::Initialize(m_scene);
 }
 
 void MyGame::Update()
 {
-	Updatable::Update(*m_context, m_scene);
+	Updatable::Update(m_scene);
 }
 
 void MyGame::RenderInitialize()
 {
 	// ImGuiコンテキスト
-	auto imgui = m_context->Register<ImGuiManager>();
+	auto imgui = GameContext::Register<ImGuiManager>();
 
 	// ImGui初期化
-	imgui.RenderInitialize(*m_context);
+	imgui.RenderInitialize();
 
-	Renderable::RenderInitialize(*m_context, m_scene);
+	Renderable::RenderInitialize(m_scene);
 }
 
-void MyGame::Render()
+void MyGame::Render(Camera& camera)
 {
 	static int bench = Bench();
 
 	// 描画イベント
-	Renderable::Render(*m_context, m_scene);
+	Renderable::Render(m_scene, std::forward<Camera>(camera));
 
 	// ImGui
 	{
 		// ImGuiコンテキスト
-		auto& imgui = m_context->Get<ImGuiManager>();
+		auto& imgui = GameContext::Get<ImGuiManager>();
 
 		// ImGui描画開始
-		imgui.Begin(*m_context);
+		imgui.Begin();
 
 		// Widgets
-		Widgets::AllWidgets::Render(*m_context, m_scene);
+		Widgets::AllWidgets::Render(m_scene);
 
 		// ImGui描画終了
-		imgui.End(*m_context);
+		imgui.End();
 	}
 }
 
 void MyGame::RenderFinalize()
 {
-	Renderable::RenderFinalize(*m_context, m_scene);
+	Renderable::RenderFinalize(m_scene);
 
 	// ImGuiコンテキスト
-	auto& imgui = m_context->Get<ImGuiManager>();
+	auto& imgui = GameContext::Get<ImGuiManager>();
 
 	// ImGuiファイナライズ
-	imgui.RenderFinalize(*m_context);
+	imgui.RenderFinalize();
 
 	// ImGui削除
-	m_context->Remove<ImGuiManager>();
+	GameContext::Remove<ImGuiManager>();
 }
 
 MyGame::~MyGame()

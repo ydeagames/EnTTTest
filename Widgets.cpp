@@ -7,7 +7,7 @@
 
 namespace Widgets
 {
-	void Hierarchy(GameContext& ctx, Scene& scene)
+	void Hierarchy(Scene& scene)
 	{
 		class Node
 		{
@@ -27,7 +27,7 @@ namespace Widgets
 		};
 
 		auto& reg = scene.registry;
-		auto& editorState = ctx.Get<EntityEditorState>();
+		auto& editorState = GameContext::Get<EntityEditorState>();
 		auto& e0 = editorState.prev;
 		auto& e = editorState.current;
 
@@ -177,15 +177,15 @@ namespace Widgets
 		}
 	}
 
-	void Inspector(GameContext& ctx, Scene& scene)
+	void Inspector(Scene& scene)
 	{
 		auto& reg = scene.registry;
-		auto& editor = ctx.Get<MM::ImGuiEntityEditor<entt::registry>>();
-		auto& editorState = ctx.Get<EntityEditorState>();
+		auto& editor = GameContext::Get<MM::ImGuiEntityEditor<entt::registry>>();
+		auto& editorState = GameContext::Get<EntityEditorState>();
 		editor.renderImGui(reg, editorState.current);
 	}
 
-	void SceneControl(GameContext& ctx, Scene& scene)
+	void SceneControl(Scene& scene)
 	{
 		ImGui::LabelText("Scene", scene.name.c_str());
 
@@ -221,10 +221,10 @@ namespace Widgets
 		}
 	}
 
-	void EntityControl(GameContext& ctx, Scene& scene)
+	void EntityControl(Scene& scene)
 	{
 		auto& reg = scene.registry;
-		auto& editorState = ctx.Get<EntityEditorState>();
+		auto& editorState = GameContext::Get<EntityEditorState>();
 		auto& e = editorState.current;
 		{
 			int iid = (e == entt::null) ? -1 : int(reg.entity(e));
@@ -337,29 +337,29 @@ namespace Widgets
 
 	namespace AllWidgets
 	{
-		void Initialize(GameContext& ctx, Scene& scene)
+		void Initialize(Scene& scene)
 		{
 			auto& reg = scene.registry;
-			ctx.Register<EntityEditorState>();
-			auto& editor = ctx.Register<MM::ImGuiEntityEditor<entt::registry>>();
-			Components::InitializeEditorComponents(ctx, reg, editor);
+			GameContext::Register<EntityEditorState>();
+			auto& editor = GameContext::Register<MM::ImGuiEntityEditor<entt::registry>>();
+			Components::InitializeEditorComponents(reg, editor);
 		}
 
-		void Render(GameContext& ctx, Scene& scene)
+		void Render(Scene& scene)
 		{
-			Widgets::Inspector(ctx, scene);
+			Widgets::Inspector(scene);
 
 			if (ImGui::Begin("Hierarchy"))
 			{
-				Widgets::SceneControl(ctx, scene);
+				Widgets::SceneControl(scene);
 
 				ImGui::Separator();
 
-				Widgets::EntityControl(ctx, scene);
+				Widgets::EntityControl(scene);
 
 				ImGui::Separator();
 
-				Widgets::Hierarchy(ctx, scene);
+				Widgets::Hierarchy(scene);
 
 				ImGui::End();
 			}

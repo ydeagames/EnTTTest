@@ -57,5 +57,6 @@ private:
     DX::StepTimer                           m_timer;
 
 	GameContext                             m_context;
-	MyGame                                  m_myGame;
+	std::unique_ptr<Camera>                 m_mainCamera;
+	std::unique_ptr<MyGame>                 m_myGame;
 };

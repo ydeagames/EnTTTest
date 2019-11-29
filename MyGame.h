@@ -5,13 +5,12 @@ class MyGame
 {
 private:
 	Scene m_scene;
-	GameContext* m_context;
 
 public:
-	MyGame(GameContext* context);
+	MyGame();
 	void Update();
 	void RenderInitialize();
-	void Render();
+	void Render(Camera& camera);
 	void RenderFinalize();
 	~MyGame();
 

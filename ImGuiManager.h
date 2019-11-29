@@ -14,10 +14,10 @@ private:
 
 public:
 	// ê∂ê¨
-	void RenderInitialize(GameContext& context);
+	void RenderInitialize();
 	// ï`âÊ
-	void Begin(GameContext& context);
-	void End(GameContext& context);
+	void Begin();
+	void End();
 	// îjä¸
-	void RenderFinalize(GameContext& context);
+	void RenderFinalize();
 };
