@@ -13,16 +13,36 @@ class GameContext final
 private:
 	class GameContextImpl
 	{
-	public:
-		template<typename T>
-		class Holder
+	private:
+		class IHolder
 		{
 		public:
-			virtual ~Holder() = default;
+			virtual ~IHolder() = default;
+		};
+
+		template<typename T>
+		class Holder : public IHolder
+		{
+		public:
 			std::unique_ptr<T> data;
 		};
+
 		using ctx_family = entt::Family<struct InternalContextFamily>;
-		std::vector<std::unique_ptr<Holder<void>>> pools;
+		std::vector<std::unique_ptr<IHolder>> pools;
+
+		template<typename Component>
+		inline Holder<Component>& holder()
+		{
+			const auto ctype = ctx_family::type<Component>();
+			return static_cast<Holder<Component>&>(*pools[ctype]);
+		}
+
+		template<typename Component>
+		inline const Holder<Component>& holder() const
+		{
+			const auto ctype = ctx_family::type<Component>();
+			return static_cast<const Holder<Component>&>(*pools.at(ctype));
+		}
 
 	public:
 		template<typename Component, typename... Args>
@@ -33,9 +53,7 @@ private:
 				pools.resize(ctype + 1);
 			if (!pools[ctype])
 				pools[ctype] = std::make_unique<Holder<Component>>();
-			auto& pool = static_cast<Holder<Component>&>(*pools[ctype]);
-			pool.data = std::make_unique<Component>(std::forward<Args>(args)...);
-			return *pool.data;
+			return *(holder<Component>().data = std::make_unique<Component>(std::forward<Args>(args)...));
 		}
 
 		template<typename Component>
@@ -48,16 +66,13 @@ private:
 		template<typename Component>
 		void Remove()
 		{
-			const auto ctype = ctx_family::type<Component>();
-			pools[ctype]->data = nullptr;
+			holder<Component>().data = nullptr;
 		}
 
 		template<typename Component>
 		inline Component& Get()
 		{
-			const auto ctype = ctx_family::type<Component>();
-			auto& pool = static_cast<Holder<Component>&>(*pools[ctype]);
-			return *pool.data;
+			return *holder<Component>().data;
 		}
 	};
 

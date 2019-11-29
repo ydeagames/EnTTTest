@@ -7,6 +7,8 @@
 #include "Widgets.h"
 #include "GameContext2.h"
 
+GameContext3::Impl* GameContext3::Impl::s_impl = nullptr;
+
 int MyGame::Bench()
 {
 	/*
@@ -28,11 +30,11 @@ int MyGame::Bench()
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 	std::cout << "Finish in " << duration / 1'000'000.f << " (" << duration / (float)count << "ƒÊs)" << std::endl;
 	*/
+	constexpr long count = 100'000L;
 	{
 		GameContext2::Register<Camera>(std::make_unique<Camera>());
 		std::cout << "Performance Test" << std::endl;
 		auto t1 = std::chrono::high_resolution_clock::now();
-		constexpr long count = 100'000L;
 		for (long i = 0; i < count; i++)
 		{
 			auto camera = GameContext2::Get<Camera>();
@@ -44,10 +46,22 @@ int MyGame::Bench()
 	{
 		std::cout << "Performance Test" << std::endl;
 		auto t1 = std::chrono::high_resolution_clock::now();
-		constexpr long count = 100'000L;
 		for (long i = 0; i < count; i++)
 		{
 			auto& camera = GameContext::Get<Camera>();
+		}
+		auto t2 = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+		std::cout << "Finish in " << duration / 1'000'000.f << " (" << duration / (float)count << "ƒÊs)" << std::endl;
+	}
+	{
+		GameContext3 ctx;
+		GameContext3::Register<Camera>();
+		std::cout << "Performance Test" << std::endl;
+		auto t1 = std::chrono::high_resolution_clock::now();
+		for (long i = 0; i < count; i++)
+		{
+			auto& camera = GameContext3::Get<Camera>();
 		}
 		auto t2 = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
