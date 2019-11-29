@@ -143,9 +143,8 @@ namespace ECS
 		{
 			editor.registerComponentWidgetFn(
 				reg.type<Component>(),
-				[](auto& reg, auto entity) {
-					GameObject o{ &reg, entity };
-					reg.get<Component>(entity).EditorGui(o);
+				[](auto& registry, auto entity) {
+					registry.get<Component>(entity).EditorGui();
 				});
 		}
 
@@ -159,65 +158,6 @@ namespace ECS
 		static void EditorWidget(Registry& reg, MM::ImGuiEntityEditor<Registry>& editor)
 		{
 			EditorWidget0<Component>(0, reg, editor);
-		}
-	};
-
-	template<typename Registry>
-	class ComponentLifecycle
-	{
-	private:
-		template<typename Component, typename = decltype(&Component::Awake)>
-		static void Awake0(int, Registry & registry)
-		{
-			class Creation
-			{
-			public:
-				GameContext& ctx;
-
-			public:
-				void on(Registry& registry, typename Registry::entity_type entity)
-				{
-					registry.get<Component>(entity).Awake(ctx);
-				}
-			};
-			Creation cre;
-			registry.construction<Component>().connect<Creation, & Creation::on>(&cre);
-		}
-
-		template<typename Component>
-		static void Awake0(bool, Registry& reg)
-		{
-		}
-
-		template<typename Component, typename = decltype(&Component::Destroy)>
-		static void Destroy0(int, Registry & registry)
-		{
-			class Deletion
-			{
-			public:
-				GameContext& ctx;
-
-			public:
-				void on(Registry& registry, typename Registry::entity_type entity)
-				{
-					registry.get<Component>(entity).Destroy(ctx);
-				}
-			};
-			Deletion del(ctx);
-			registry.destruction<Component>().connect<Deletion, & Deletion::on>(&del);
-		}
-
-		template<typename Component>
-		static void Destroy0(bool, Registry& reg)
-		{
-		}
-
-	public:
-		template<typename Component>
-		static void Lifecycle(Registry& reg)
-		{
-			Awake0<Component>(0, reg);
-			Destroy0<Component>(0, reg);
 		}
 	};
 
@@ -253,7 +193,7 @@ namespace ECS
 		template<typename Registry, typename Component>
 		static void InitializeLifecycleEvent(Registry& reg)
 		{
-			ComponentDependency<Registry>::DependsOn<Component>(reg);
+			ECS::LifecycleEvents<Registry>::Lifecycle<Component>(reg);
 		}
 
 		template<typename Registry, typename Component>
@@ -308,11 +248,13 @@ namespace ECS
 			ComponentClone<Registry>::Clone<Components...>(reg, srcs, dsts);
 		}
 
-		template<typename Registry>
-		static bool LoadScene(const std::string& location, Registry& scene)
+		template<typename Registry, typename RegistryInitializer>
+		static bool LoadScene(const std::string& location, Registry& scene, RegistryInitializer initFunc)
 		{
 			std::ifstream storage(location);
-			return ObjectSerializer<Registry, std::tuple<Components...>, std::tuple<Tags...>>::Import(storage, scene.restore());
+			auto snap = scene.restore();
+			initFunc(scene);
+			return ObjectSerializer<Registry, std::tuple<Components...>, std::tuple<Tags...>>::Import(storage, snap);
 		}
 
 		template<typename Registry>

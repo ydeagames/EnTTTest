@@ -24,6 +24,7 @@ class Transform
 {
 public:
 	static constexpr const char* Identifier = "Transform";
+	GameObject gameObject;
 
 public:
 	std::string name;
@@ -52,18 +53,19 @@ public:
 	}
 
 	template<class Reference>
-	void Reference(Reference& ref)
+	void Reference(Reference& reference)
 	{
-		ref(parent);
+		reference(parent);
 	}
 
-	void EditorGui(GameObject& entity);
+	void EditorGui();
 };
 
 class MoveUpdater
 {
 public:
 	static constexpr const char* Identifier = "MoveUpdater";
+	GameObject gameObject;
 
 	template<typename Component>
 	static void Dependency(Component& component)
@@ -75,8 +77,8 @@ public:
 	DirectX::SimpleMath::Vector3 vel;
 
 public:
-	void Start(GameObject& entity);
-	void Update(GameObject& entity);
+	void Start();
+	void Update();
 
 public:
 	template<class Archive>
@@ -89,6 +91,7 @@ class MoveDownUpdater
 {
 public:
 	static constexpr const char* Identifier = "MoveDownUpdater";
+	GameObject gameObject;
 
 	template<typename Component>
 	static void Dependency(Component& component)
@@ -97,7 +100,7 @@ public:
 	}
 
 public:
-	void Update(GameObject& entity);
+	void Update();
 
 public:
 	template<class Archive>
@@ -110,6 +113,7 @@ class PrimitiveRenderer
 {
 public:
 	static constexpr const char* Identifier = "PrimitiveRenderer";
+	GameObject gameObject;
 
 	template<typename Component>
 	static void Dependency(Component& component)
@@ -121,8 +125,10 @@ public:
 	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
 
 public:
-	void RenderStart(GameObject& entity);
-	void Render(GameObject& entity, Camera& camera);
+	void Awake() { std::cout << "Awake" << gameObject.entity << std::endl; }
+	void OnDestroy() { std::cout << "OnDestroy" << gameObject.entity << std::endl; }
+	void RenderStart();
+	void Render(Camera& camera);
 
 public:
 	template<class Archive>
@@ -131,7 +137,7 @@ public:
 	}
 };
 
-class UpdateRenderer : public MoveUpdater, public PrimitiveRenderer
+class UpdateRenderer : public MoveUpdater
 {
 public:
 	static constexpr const char* Identifier = "UpdateRenderer";

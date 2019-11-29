@@ -62,7 +62,7 @@ public:
 
 	static void RenderInitialize(Scene& registry)
 	{
-		//ECS::EventBus<Renderable, 0>::Post(registry);
+		ECS::EventBus<Renderable, 0>::Post(registry);
 	}
 
 	static void Render(Scene& registry, Camera&& camera)

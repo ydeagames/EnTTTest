@@ -13,7 +13,7 @@ namespace ECS
 		template<typename T>
 		struct started_t {};
 
-		using Func = void(Scene& registry, Args&&... args);
+		using Func = void(Scene& registry, Args&& ... args);
 		static std::vector<std::function<Func>>& handlers()
 		{
 			static std::vector<std::function<Func>> value;
@@ -25,8 +25,7 @@ namespace ECS
 		{
 			handlers().push_back([f](Scene& registry, auto&& ... args) {
 				registry.registry.view<T>().each([f, &registry, &args](auto& entity, T& comp) {
-					GameObject o{ &registry.registry, entity };
-					f(o, comp, std::forward<Args>(args)...);
+					f(registry.registry, entity, comp, std::forward<Args>(args)...);
 					});
 				});
 		}
@@ -34,9 +33,9 @@ namespace ECS
 		template<typename T, typename... F>
 		static void RegisterOnce(F&& ... f)
 		{
-			RegisterCustomOnce<T>([f...](auto& o, T& comp, auto&& ... args) {
+			RegisterCustomOnce<T>([f...](auto& registry, auto& entity, T& comp, auto&& ... args) {
 				using accumulator_type = int[];
-				accumulator_type accumulator = { 0, ((comp.*f)(o, args...), 0)... };
+				accumulator_type accumulator = { 0, ((comp.*f)(args...), 0)... };
 				(void)accumulator;
 			});
 		}
@@ -44,8 +43,8 @@ namespace ECS
 		template<typename T, typename... F>
 		static void RegisterFirstOnce(F&& ... f)
 		{
-			RegisterCustomOnce<T>([f...](auto& o, T& comp, auto&& ... args) {
-				if (!o.registry->has<started_t<T>>(o.entity))
+			RegisterCustomOnce<T>([f...](auto& registry, auto& entity, T& comp, auto&& ... args) {
+				if (!registry.has<started_t<T>>(entity))
 				{
 					struct Listener
 					{
@@ -54,12 +53,13 @@ namespace ECS
 							registry.reset<started_t<T>>(entity);
 						}
 					} listener;
-					entt::registry& registry = *o.registry;
 					registry.destruction<T>().connect<Listener, & Listener::on>(&listener);
-					registry.assign<started_t<T>>(o.entity);
-					using accumulator_type = int[];
-					accumulator_type accumulator = { 0, ((comp.*f)(o, args...), 0)... };
-					(void)accumulator;
+					registry.assign<started_t<T>>(entity);
+					{
+						using accumulator_type = int[];
+						accumulator_type accumulator = { 0, ((comp.*f)(args...), 0)... };
+						(void)accumulator;
+					}
 				}
 			});
 		}
@@ -88,6 +88,80 @@ namespace ECS
 		static void RegisterFirst(F f)
 		{
 			static int once = (RegisterFirstOnce<T>(f), 0);
+		}
+	};
+
+	template<typename Registry>
+	class LifecycleEvents
+	{
+	private:
+		template<typename Component, typename = decltype(&Component::gameObject)>
+		static void Init0(int, Registry & registry)
+		{
+			class Creation
+			{
+			public:
+				void on(Registry& registry, typename Registry::entity_type entity)
+				{
+					registry.get<Component>(entity).gameObject = GameObject{ &registry, entity };
+				}
+			};
+			Creation cre;
+			registry.construction<Component>().connect<Creation, & Creation::on>(&cre);
+		}
+
+		template<typename Component>
+		static void Init0(bool, Registry& reg)
+		{
+		}
+
+		template<typename Component, typename = decltype(&Component::Awake)>
+		static void Awake0(int, Registry & registry)
+		{
+			class Creation
+			{
+			public:
+				void on(Registry& registry, typename Registry::entity_type entity)
+				{
+					registry.get<Component>(entity).Awake();
+				}
+			};
+			Creation cre;
+			registry.construction<Component>().connect<Creation, & Creation::on>(&cre);
+		}
+
+		template<typename Component>
+		static void Awake0(bool, Registry& reg)
+		{
+		}
+
+		template<typename Component, typename = decltype(&Component::OnDestroy)>
+		static void OnDestroy0(int, Registry & registry)
+		{
+			class Deletion
+			{
+			public:
+				void on(Registry& registry, typename Registry::entity_type entity)
+				{
+					registry.get<Component>(entity).OnDestroy();
+				}
+			};
+			Deletion del;
+			registry.destruction<Component>().connect<Deletion, & Deletion::on>(&del);
+		}
+
+		template<typename Component>
+		static void OnDestroy0(bool, Registry& reg)
+		{
+		}
+
+	public:
+		template<typename Component>
+		static void Lifecycle(Registry& reg)
+		{
+			Init0<Component>(0, reg);
+			Awake0<Component>(0, reg);
+			OnDestroy0<Component>(0, reg);
 		}
 	};
 }

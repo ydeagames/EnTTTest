@@ -4,30 +4,30 @@
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
-void PrimitiveRenderer::RenderStart(GameObject& entity)
+void PrimitiveRenderer::RenderStart()
 {
 	m_model = GeometricPrimitive::CreateTeapot(GameContext::Get<DX::DeviceResources>().GetD3DDeviceContext());
 }
 
-void PrimitiveRenderer::Render(GameObject& entity, Camera& camera)
+void PrimitiveRenderer::Render(Camera& camera)
 {
 	if (m_model)
-		m_model->Draw(entity.GetComponent<Transform>().GetMatrix(), camera.view, camera.projection);
+		m_model->Draw(gameObject.GetComponent<Transform>().GetMatrix(), camera.view, camera.projection);
 }
 
-void MoveUpdater::Start(GameObject& entity)
+void MoveUpdater::Start()
 {
 	vel += DirectX::SimpleMath::Vector3::Right * .1f;
 }
 
-void MoveUpdater::Update(GameObject& entity)
+void MoveUpdater::Update()
 {
-	entity.GetComponent<Transform>().position += vel;
+	gameObject.GetComponent<Transform>().position += vel;
 }
 
-void MoveDownUpdater::Update(GameObject& entity)
+void MoveDownUpdater::Update()
 {
-	entity.GetComponent<Transform>().position.y -= .1f;
+	gameObject.GetComponent<Transform>().position.y -= .1f;
 }
 
 namespace
@@ -75,10 +75,10 @@ namespace
 	}
 }
 
-void Transform::EditorGui(GameObject& entity)
+void Transform::EditorGui()
 {
 	auto& t = *this;
-	auto& reg = *entity.registry;
+	auto& reg = *gameObject.registry;
 
 	std::string tmpname = t.name;
 	tmpname.resize(16);

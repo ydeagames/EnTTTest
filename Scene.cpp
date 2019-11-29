@@ -16,9 +16,10 @@ Scene::Scene()
 
 bool Scene::Load()
 {
-	bool b = Components::LoadScene(location, registry);
-	Components::InitializeDependency(registry);
-	return b;
+	return Components::LoadScene(location, registry, [](auto& registry) {
+		Components::InitializeDependency(registry);
+		Components::InitializeLifecycleEvents(registry);
+		});
 }
 
 bool Scene::Save() const
