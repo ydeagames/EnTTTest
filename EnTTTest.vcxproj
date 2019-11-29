@@ -187,9 +187,7 @@
     <ClInclude Include="Components.h" />
     <ClInclude Include="EventBus.h" />
     <ClInclude Include="GameContext.h" />
-    <ClInclude Include="GameContext2.h" />
     <ClInclude Include="GameObject.h" />
-    <ClInclude Include="ServiceLocator.h" />
     <ClInclude Include="Widgets.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="ImGuiStyles.h" />
