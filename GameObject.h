@@ -7,6 +7,19 @@ public:
 	entt::entity entity;
 
 public:
+	GameObject(entt::registry* registry, entt::entity entity)
+		: registry(registry)
+		, entity(entity)
+	{
+	}
+
+	GameObject()
+		: registry(nullptr)
+		, entity(entt::null)
+	{
+	}
+
+public:
 	template<typename Component>
 	bool HasComponent()
 	{

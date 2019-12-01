@@ -155,13 +155,21 @@ namespace ECS
 		{
 		}
 
-	public:
 		template<typename Component>
+		static void Lifecycle0(Registry& reg)
+		{
+			Awake0<Component>(0, reg);
+			Init0<Component>(0, reg);
+			OnDestroy0<Component>(0, reg);
+		}
+
+	public:
+		template<typename... Components>
 		static void Lifecycle(Registry& reg)
 		{
-			Init0<Component>(0, reg);
-			Awake0<Component>(0, reg);
-			OnDestroy0<Component>(0, reg);
+			using accumulator_type = int[];
+			accumulator_type accumulator = { 0, (Lifecycle0<Components>(reg), 0)... };
+			(void)accumulator;
 		}
 	};
 }

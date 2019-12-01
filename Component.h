@@ -191,12 +191,6 @@ namespace ECS
 		}
 
 		template<typename Registry, typename Component>
-		static void InitializeLifecycleEvent(Registry& reg)
-		{
-			ECS::LifecycleEvents<Registry>::Lifecycle<Component>(reg);
-		}
-
-		template<typename Registry, typename Component>
 		static void UpdateReference(Registry& reg, const std::vector<typename Registry::entity_type>& srcs, const std::vector<typename Registry::entity_type>& dsts)
 		{
 			ComponentReference<Registry>::Resolve<Component>(reg, srcs, dsts);
@@ -229,9 +223,7 @@ namespace ECS
 		template<typename Registry>
 		static void InitializeLifecycleEvents(Registry& reg)
 		{
-			using accumulator_type = int[];
-			accumulator_type accumulator = { 0, (InitializeLifecycleEvent<Registry, Components>(reg), 0)... };
-			(void)accumulator;
+			ECS::LifecycleEvents<Registry>::Lifecycle<Components...>(reg);
 		}
 
 		template<typename Registry>
@@ -252,6 +244,7 @@ namespace ECS
 		static bool LoadScene(const std::string& location, Registry& scene, RegistryInitializer initFunc)
 		{
 			std::ifstream storage(location);
+			scene.reset();
 			auto snap = scene.restore();
 			initFunc(scene);
 			return ObjectSerializer<Registry, std::tuple<Components...>, std::tuple<Tags...>>::Import(storage, snap);
