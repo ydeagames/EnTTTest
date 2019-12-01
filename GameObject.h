@@ -20,8 +20,13 @@ public:
 	}
 
 public:
+	GameObject Wrap(entt::entity e) const
+	{
+		return GameObject(registry, e);
+	}
+
 	template<typename Component>
-	bool HasComponent()
+	bool HasComponent() const
 	{
 		return registry->has<Component>(entity);
 	}
@@ -35,7 +40,7 @@ public:
 	template<typename Component>
 	const Component& GetComponent() const
 	{
-		return registry->get<T>(entity);
+		return registry->get<Component>(entity);
 	}
 
 	template<typename Component>
@@ -44,7 +49,6 @@ public:
 		return registry->get<Component>(entity);
 	}
 
-	entt::entity GetParent();
-
-	std::vector<entt::entity> GetChildren();
+	entt::entity GetParent() const;
+	std::vector<entt::entity> GetChildren() const;
 };

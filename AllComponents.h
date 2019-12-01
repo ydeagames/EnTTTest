@@ -9,7 +9,8 @@ using Components = ECS::ComponentManager<
 		MoveUpdater,
 		MoveDownUpdater,
 		PrimitiveRenderer,
-		UpdateRenderer
+		UpdateRenderer,
+		CameraComponent
 	>,
 	std::tuple<
 	>,

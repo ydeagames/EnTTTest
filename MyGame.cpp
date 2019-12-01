@@ -34,6 +34,13 @@ MyGame::MyGame()
 
 	// Widgets
 	Widgets::AllWidgets::Initialize(m_scene);
+
+	GameContext::Register<TransformResolver>();
+}
+
+MyGame::~MyGame()
+{
+	GameContext::Remove<TransformResolver>();
 }
 
 void MyGame::Update()
@@ -77,6 +84,9 @@ void MyGame::Render(Camera& camera)
 {
 	static int bench = Bench();
 
+	// トランスフォームのキャッシュをクリア
+	GameContext::Get<TransformResolver>().ClearCache();
+
 	// 描画イベント
 	Renderable::Render(m_scene, std::forward<Camera>(camera));
 
@@ -88,14 +98,13 @@ void MyGame::Render(Camera& camera)
 		// ImGui描画開始
 		imgui.Begin();
 
+		// GUI描画イベント
+		Renderable::RenderGui(m_scene, std::forward<Camera>(camera));
+
 		// Widgets
 		Widgets::AllWidgets::Render(m_scene);
 
 		// ImGui描画終了
 		imgui.End();
 	}
-}
-
-MyGame::~MyGame()
-{
 }

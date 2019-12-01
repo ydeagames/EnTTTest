@@ -17,7 +17,7 @@ void PrimitiveRenderer::Render(Camera& camera)
 
 void MoveUpdater::Start()
 {
-	vel += DirectX::SimpleMath::Vector3::Right * .1f;
+	vel += Vector3::Right * .1f;
 }
 
 void MoveUpdater::Update()
@@ -75,6 +75,18 @@ namespace
 	}
 }
 
+DirectX::SimpleMath::Matrix Transform::GetLocalMatrix() const
+{
+	return Matrix::CreateScale(scale)
+		* Matrix::CreateFromQuaternion(rotation)
+		* Matrix::CreateTranslation(position);
+}
+
+DirectX::SimpleMath::Matrix Transform::GetMatrix() const
+{
+	return GameContext::Get<TransformResolver>().Resolve(gameObject);
+}
+
 void Transform::EditorGui()
 {
 	auto& t = *this;
@@ -126,4 +138,48 @@ void Transform::EditorGui()
 
 	// the "##Transform" ensures that you can use the name "x" in multiple lables
 	ImGui::DragFloat3("Scale##Transform", &t.scale.x, 0.1f);
+}
+
+void TransformResolver::ClearCache()
+{
+	matrixMap.reset();
+}
+
+DirectX::SimpleMath::Matrix TransformResolver::Resolve(const GameObject& gameObject)
+{
+	if (matrixMap.has(gameObject.entity))
+		return matrixMap.get(gameObject.entity);
+	if (gameObject.HasComponent<Transform>())
+	{
+		auto& transform = gameObject.GetComponent<Transform>();
+		auto matrix = transform.GetLocalMatrix();
+		if (gameObject.registry->valid(transform.parent))
+			matrix *= Resolve(gameObject.Wrap(transform.parent));
+		matrixMap.construct(gameObject.entity, matrix);
+		return matrix;
+	}
+	else
+	{
+		auto matrix = DirectX::SimpleMath::Matrix::Identity;
+		matrixMap.construct(gameObject.entity, matrix);
+		return matrix;
+	}
+}
+
+void CameraComponent::Render(Camera& camera)
+{
+	cameraptr = &camera;
+}
+
+void CameraComponent::Update()
+{
+	if (cameraptr)
+	{
+		Vector3 s, t;
+		Quaternion r;
+		gameObject.GetComponent<Transform>().GetMatrix().Decompose(s, r, t);
+		cameraptr->view = Matrix::CreateScale(Vector3::One / s) * DirectX::SimpleMath::Matrix::CreateLookAt(t,
+			t + Vector3::Transform(Vector3::Forward, Matrix::CreateFromQuaternion(r)),
+			Vector3::Transform(Vector3::Up, Matrix::CreateFromQuaternion(r)));
+	}
 }

@@ -1,6 +1,7 @@
 {
     "entities": {
         "created": [
+            2,
             1,
             0
         ],
@@ -12,6 +13,8 @@
             {
                 "id": 0,
                 "component": {
+                    "name": "",
+                    "parent": 4294967295,
                     "position": {
                         "x": 0.0,
                         "y": 0.0,
@@ -20,7 +23,7 @@
                     "rotation": {
                         "x": 0.0,
                         "y": 0.0,
-                        "z": 0.0,
+                        "z": 4.088874516749996e-10,
                         "w": 1.0
                     },
                     "scale": {
@@ -33,8 +36,10 @@
             {
                 "id": 1,
                 "component": {
+                    "name": "",
+                    "parent": 0,
                     "position": {
-                        "x": 0.0,
+                        "x": 2.0,
                         "y": 0.0,
                         "z": 0.0
                     },
@@ -50,28 +55,43 @@
                         "z": 1.0
                     }
                 }
-            }
-        ],
-        "MoveUpdater": [
+            },
             {
-                "id": 0,
-                "component": {}
+                "id": 2,
+                "component": {
+                    "name": "",
+                    "parent": 4294967295,
+                    "position": {
+                        "x": 3.0,
+                        "y": -0.20000000298023225,
+                        "z": 6.900000095367432
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                }
             }
         ],
+        "MoveUpdater": [],
         "MoveDownUpdater": [],
         "PrimitiveRenderer": [
-            {
-                "id": 0,
-                "component": {}
-            },
             {
                 "id": 1,
                 "component": {}
             }
         ],
-        "UpdateRenderer": [
+        "UpdateRenderer": [],
+        "CameraComponent": [
             {
-                "id": 0,
+                "id": 2,
                 "component": {}
             }
         ]

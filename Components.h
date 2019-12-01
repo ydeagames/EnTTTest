@@ -20,6 +20,18 @@ namespace DirectX
 	}
 }
 
+class Transform;
+
+class TransformResolver
+{
+private:
+	entt::SparseSet<entt::entity, DirectX::SimpleMath::Matrix> matrixMap;
+
+public:
+	void ClearCache();
+	DirectX::SimpleMath::Matrix Resolve(const GameObject& transform);
+};
+
 class Component
 {
 public:
@@ -49,12 +61,8 @@ public:
 	DirectX::SimpleMath::Vector3 scale = { 1, 1, 1 };
 
 public:
-	DirectX::SimpleMath::Matrix GetMatrix()
-	{
-		return DirectX::SimpleMath::Matrix::CreateScale(scale)
-			* DirectX::SimpleMath::Matrix::CreateFromQuaternion(rotation)
-			* DirectX::SimpleMath::Matrix::CreateTranslation(position);
-	}
+	DirectX::SimpleMath::Matrix GetLocalMatrix() const;
+	DirectX::SimpleMath::Matrix GetMatrix() const;
 
 public:
 	template<class Archive>
@@ -156,6 +164,31 @@ public:
 	{
 		component.DependsOn<MoveUpdater, Transform, PrimitiveRenderer>();
 	}
+
+public:
+	template<class Archive>
+	void serialize(Archive& archive)
+	{
+	}
+};
+
+class CameraComponent : public Component
+{
+public:
+	static constexpr const char* Identifier = "CameraComponent";
+
+	template<typename Component>
+	static void Dependency(Component& component)
+	{
+		component.DependsOn<Transform>();
+	}
+
+private:
+	Camera* cameraptr = nullptr;
+
+public:
+	void Render(Camera& camera);
+	void Update();
 
 public:
 	template<class Archive>
