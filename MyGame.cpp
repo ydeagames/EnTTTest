@@ -41,13 +41,34 @@ void MyGame::Update()
 	Updatable::Update(m_scene);
 }
 
+class MyGame::ImGuiPtr
+{
+public:
+	ImGuiPtr()
+	{
+		// ImGuiコンテキスト
+		auto imgui = GameContext::Register<ImGuiManager>();
+
+		// ImGui初期化
+		imgui.RenderInitialize();
+	}
+
+	~ImGuiPtr()
+	{
+		// ImGuiコンテキスト
+		auto& imgui = GameContext::Get<ImGuiManager>();
+
+		// ImGuiファイナライズ
+		imgui.RenderFinalize();
+
+		// ImGui削除
+		GameContext::Remove<ImGuiManager>();
+	}
+};
+
 void MyGame::RenderInitialize()
 {
-	// ImGuiコンテキスト
-	auto imgui = GameContext::Register<ImGuiManager>();
-
-	// ImGui初期化
-	imgui.RenderInitialize();
+	m_imgui = std::make_unique<ImGuiPtr>();
 
 	Renderable::RenderInitialize(m_scene);
 }
@@ -73,20 +94,6 @@ void MyGame::Render(Camera& camera)
 		// ImGui描画終了
 		imgui.End();
 	}
-}
-
-void MyGame::RenderFinalize()
-{
-	Renderable::RenderFinalize(m_scene);
-
-	// ImGuiコンテキスト
-	auto& imgui = GameContext::Get<ImGuiManager>();
-
-	// ImGuiファイナライズ
-	imgui.RenderFinalize();
-
-	// ImGui削除
-	GameContext::Remove<ImGuiManager>();
 }
 
 MyGame::~MyGame()

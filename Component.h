@@ -244,7 +244,6 @@ namespace ECS
 		static bool LoadScene(const std::string& location, Registry& scene, RegistryInitializer initFunc)
 		{
 			std::ifstream storage(location);
-			scene.reset();
 			auto snap = scene.restore();
 			initFunc(scene);
 			return ObjectSerializer<Registry, std::tuple<Components...>, std::tuple<Tags...>>::Import(storage, snap);

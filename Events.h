@@ -70,9 +70,4 @@ public:
 		ECS::EventBus<Renderable, 0>::Post(registry);
 		ECS::EventBus<Renderable, 1, Camera>::Post(registry, std::forward<Camera>(camera));
 	}
-
-	static void RenderFinalize(Scene& registry)
-	{
-		//ECS::EventBus<Renderable, 1>::Post(registry);
-	}
 };

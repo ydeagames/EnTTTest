@@ -12,6 +12,7 @@ public:
 public:
 	GameObject Create();
 	Scene();
+	~Scene();
 	bool Load();
 	bool Save() const;
 };

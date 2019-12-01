@@ -44,7 +44,7 @@ void Game::Initialize(HWND window, int width, int height)
 
 void Game::Finalize()
 {
-	m_myGame->RenderFinalize();
+	m_myGame = nullptr;
 }
 
 #pragma region Frame Update
@@ -209,8 +209,6 @@ void Game::CreateWindowSizeDependentResources()
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
-
-	m_myGame->RenderFinalize();
 }
 
 void Game::OnDeviceRestored()
