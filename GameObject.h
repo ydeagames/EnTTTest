@@ -43,4 +43,8 @@ public:
 	{
 		return registry->get<Component>(entity);
 	}
+
+	entt::entity GetParent();
+
+	std::vector<entt::entity> GetChildren();
 };

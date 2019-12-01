@@ -20,11 +20,23 @@ namespace DirectX
 	}
 }
 
-class Transform
+class Component
+{
+public:
+	static constexpr const char* Identifier = "Component";
+	GameObject gameObject;
+
+//public:
+//	Component() = default;
+//	~Component() = default;
+//	Component(const Component& c) : gameObject(c.gameObject) { std::cout << "Copy Constructor" << std::endl; }
+//	Component& operator=(const Component& c) { std::cout << "Copy Assignment" << std::endl; gameObject = c.gameObject; return *this; }
+};
+
+class Transform : public Component
 {
 public:
 	static constexpr const char* Identifier = "Transform";
-	GameObject gameObject;
 
 public:
 	std::string name;
@@ -61,11 +73,10 @@ public:
 	void EditorGui();
 };
 
-class MoveUpdater
+class MoveUpdater : public Component
 {
 public:
 	static constexpr const char* Identifier = "MoveUpdater";
-	GameObject gameObject;
 
 	template<typename Component>
 	static void Dependency(Component& component)
@@ -87,11 +98,10 @@ public:
 	}
 };
 
-class MoveDownUpdater
+class MoveDownUpdater : public Component
 {
 public:
 	static constexpr const char* Identifier = "MoveDownUpdater";
-	GameObject gameObject;
 
 	template<typename Component>
 	static void Dependency(Component& component)
@@ -109,11 +119,10 @@ public:
 	}
 };
 
-class PrimitiveRenderer
+class PrimitiveRenderer : public Component
 {
 public:
 	static constexpr const char* Identifier = "PrimitiveRenderer";
-	GameObject gameObject;
 
 	template<typename Component>
 	static void Dependency(Component& component)
@@ -122,7 +131,7 @@ public:
 	}
 
 public:
-	std::shared_ptr<DirectX::GeometricPrimitive> m_model;
+	std::unique_ptr<DirectX::GeometricPrimitive> m_model;
 
 public:
 	void Awake() { std::cout << "Awake" << gameObject.entity << std::endl; }
